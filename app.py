@@ -50,7 +50,6 @@ start = st.button("🚀 양치 시작!", use_container_width=True, type="primary
 if start:
     name = user_name.strip() or "친구"
 
-    # ---------- inline the whole timer as one HTML component ----------
     import streamlit.components.v1 as components
 
     html = f"""
@@ -58,46 +57,93 @@ if start:
 <html lang="ko">
 <head>
 <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <style>
 * {{ margin:0; padding:0; box-sizing:border-box; }}
 body {{
-  font-family: 'Segoe UI', sans-serif;
+  font-family: 'Segoe UI', 'Apple SD Gothic Neo', 'Malgun Gothic', sans-serif;
   background: linear-gradient(135deg,#e0f7fa,#f3e5f5);
-  display:flex; justify-content:center; align-items:center;
-  min-height:100vh; overflow:hidden;
+  display:flex; justify-content:center; align-items:flex-start;
+  min-height:100vh; overflow-x:hidden;
+  padding:8px;
 }}
 .container {{
-  text-align:center; width:100%; max-width:420px; padding:20px;
+  text-align:center; width:100%; max-width:460px; padding:6px;
+  position:relative;
 }}
 
+/* ---------- top controls ---------- */
+.top-bar {{
+  display:flex; justify-content:space-between; align-items:center;
+  margin-bottom:6px; padding:0 2px;
+}}
+.top-group {{ display:flex; gap:4px; align-items:center; }}
+.font-btn {{
+  background:rgba(255,255,255,0.9); border:1px solid #ccc; border-radius:8px;
+  padding:4px 10px; font-weight:700; cursor:pointer;
+  font-size:15px; min-width:34px; transition:transform .1s;
+}}
+.font-btn:active {{ transform:scale(.9); }}
+.vol-wrap {{
+  display:flex; align-items:center; gap:5px;
+  background:rgba(255,255,255,0.9); border-radius:12px; padding:4px 10px;
+}}
+.mute-btn {{
+  background:none; border:none; font-size:20px; cursor:pointer; padding:2px;
+}}
+.vol-slider {{
+  -webkit-appearance:none; appearance:none;
+  width:70px; height:5px; border-radius:3px;
+  background:linear-gradient(90deg,#42a5f5,#ab47bc);
+  outline:none; cursor:pointer;
+}}
+.vol-slider::-webkit-slider-thumb {{
+  -webkit-appearance:none; width:16px; height:16px; border-radius:50%;
+  background:#fff; border:2px solid #42a5f5; cursor:pointer;
+}}
+.vol-label {{ font-size:11px; min-width:28px; color:#666; }}
+
 /* ---------- circular timer ---------- */
-.timer-ring {{ position:relative; width:260px; height:260px; margin:0 auto 18px; }}
+.timer-ring {{
+  position:relative;
+  width:min(260px, 58vw); height:min(260px, 58vw);
+  margin:0 auto 10px;
+}}
 .timer-ring svg {{ width:100%; height:100%; transform:rotate(-90deg); }}
 .timer-ring .bg  {{ fill:none; stroke:#e0e0e0; stroke-width:12; }}
 .timer-ring .fg  {{ fill:none; stroke:url(#grad); stroke-width:12;
   stroke-linecap:round; transition:stroke-dashoffset .4s ease; }}
 .timer-text {{
   position:absolute; top:50%; left:50%; transform:translate(-50%,-50%);
-  font-size:52px; font-weight:700; color:#333;
+  font-size:clamp(34px,9vw,52px); font-weight:700; color:#333;
 }}
+
+/* ---------- name header ---------- */
+.name-hdr {{ font-size:clamp(17px,4.5vw,22px); margin-bottom:4px; }}
 
 /* ---------- stage badge ---------- */
 .stage {{
-  font-size:22px; min-height:70px;
-  margin:8px 0; transition:all .3s ease;
+  font-size:clamp(15px,4vw,20px); min-height:80px;
+  margin:6px 0; transition:all .3s ease;
 }}
-.stage .emoji {{ font-size:48px; animation:bounce .6s ease; }}
+.stage .emoji {{ font-size:clamp(34px,9vw,48px); animation:bounce .6s ease; }}
+.stage .guide {{
+  background:rgba(255,255,255,0.75); border-radius:12px;
+  padding:5px 12px; margin-top:4px; font-weight:500;
+  line-height:1.4; color:#333; display:inline-block;
+  font-size:clamp(13px,3.5vw,16px);
+}}
 @keyframes bounce {{
   0%,100% {{ transform:translateY(0); }}
   50% {{ transform:translateY(-12px); }}
 }}
 
 /* ---------- buttons ---------- */
-.btn-row {{ display:flex; gap:8px; justify-content:center; flex-wrap:wrap; margin:10px 0; }}
+.btn-row {{ display:flex; gap:6px; justify-content:center; flex-wrap:wrap; margin:8px 0; }}
 .btn {{
-  padding:10px 18px; border:none; border-radius:12px;
-  font-size:15px; font-weight:600; cursor:pointer;
-  transition:transform .15s,box-shadow .15s;
+  padding:10px 16px; border:none; border-radius:12px;
+  font-size:clamp(13px,3.5vw,15px); font-weight:600; cursor:pointer;
+  transition:transform .15s;
 }}
 .btn:active {{ transform:scale(.95); }}
 .btn-add {{ background:#e3f2fd; color:#1565c0; }}
@@ -110,8 +156,8 @@ body {{
   animation:fadeIn .5s ease;
 }}
 @keyframes fadeIn {{ from{{opacity:0;transform:scale(.8)}} to{{opacity:1;transform:scale(1)}} }}
-.celebration h2 {{ font-size:28px; color:#333; }}
-.celebration .big-emoji {{ font-size:80px; animation:bounce 1s ease infinite; }}
+.celebration h2 {{ font-size:clamp(20px,5.5vw,28px); color:#333; }}
+.celebration .big-emoji {{ font-size:clamp(60px,16vw,80px); animation:bounce 1s ease infinite; }}
 
 /* confetti */
 .confetti-piece {{
@@ -122,27 +168,30 @@ body {{
   0%   {{ opacity:1; transform:translateY(-10vh) rotate(0deg); }}
   100% {{ opacity:0; transform:translateY(110vh) rotate(720deg); }}
 }}
-
-/* sound toggle */
-.sound-toggle {{
-  position:absolute; top:10px; right:10px;
-  background:none; border:none; font-size:24px; cursor:pointer;
-}}
 </style>
 </head>
 <body>
 <div class="container" id="app">
 
-  <!-- Sound toggle -->
-  <button class="sound-toggle" onclick="toggleSound()" id="soundBtn">🔊</button>
+  <!-- Top controls bar -->
+  <div class="top-bar">
+    <div class="top-group">
+      <button class="font-btn" onclick="changeFontSize(-1)">A-</button>
+      <button class="font-btn" onclick="changeFontSize(1)">A+</button>
+    </div>
+    <div class="vol-wrap">
+      <button class="mute-btn" id="muteBtn" onclick="toggleMute()">🔊</button>
+      <input type="range" class="vol-slider" id="volSlider" min="0" max="100" value="70"
+        oninput="changeVolume(this.value)">
+      <span class="vol-label" id="volLabel">70%</span>
+    </div>
+  </div>
 
   <!-- Timer screen -->
   <div id="timerScreen">
-    <div style="font-size:20px;margin-bottom:6px;">
-      <strong>{name}</strong>의 양치 타임!
-    </div>
+    <div class="name-hdr"><strong>{name}</strong>의 양치 타임!</div>
 
-    <div class="timer-ring">
+    <div class="timer-ring" id="timerRing">
       <svg viewBox="0 0 200 200">
         <defs>
           <linearGradient id="grad" x1="0%" y1="0%" x2="100%" y2="0%">
@@ -171,7 +220,7 @@ body {{
   <div class="celebration" id="celebScreen">
     <div class="big-emoji">🎉</div>
     <h2 id="celebMsg"></h2>
-    <p id="celebSub" style="color:#666;font-size:16px;"></p>
+    <p id="celebSub" style="color:#666;font-size:clamp(14px,3.8vw,16px);"></p>
     <button class="btn btn-add" style="margin-top:10px;font-size:17px;padding:12px 30px;"
       onclick="restart()">🔄 다시 하기</button>
   </div>
@@ -185,128 +234,245 @@ let remaining = TOTAL;
 let paused = false;
 let finished = false;
 let interval = null;
-let soundOn = true;
+let masterVolume = 0.7;
+let muted = false;
+let fontStep = 0;
 
-const CIRC = 2 * Math.PI * 88;          // stroke-dasharray
+const CIRC = 2 * Math.PI * 88;
 const ring = document.getElementById('ring');
 const display = document.getElementById('timeDisplay');
 const stageArea = document.getElementById('stageArea');
 
-// ========== STAGES ==========
-const STAGES = [
-  {{ pct:1.00, emoji:'🦷', msg: NAME+'! 양치 시작이다~ 구석구석 닦자!' }},
-  {{ pct:0.75, emoji:'💪', msg: '좋아! 힘차게 닦는 중!' }},
-  {{ pct:0.50, emoji:'🌟', msg: '절반 지났어! '+NAME+' 최고!' }},
-  {{ pct:0.30, emoji:'🔥', msg: '거의 다 왔어! 파이팅!' }},
-  {{ pct:0.15, emoji:'🏆', msg: '마지막 스퍼트! 조금만 더!' }},
+// ========== FONT SIZE CONTROL ==========
+function changeFontSize(dir) {{
+  fontStep = Math.max(-2, Math.min(3, fontStep + dir));
+  const s = 1 + fontStep * 0.13;
+  document.body.style.fontSize = (s * 100) + '%';
+}}
+
+// ========== BRUSHING GUIDE (양치 교본 기반) ==========
+const GUIDE = [
+  {{ pct:1.00, emoji:'🪥', msg:NAME+'! 양치 시작!', guide:'칫솔을 잇몸과 45도로 기울여 잡아요' }},
+  {{ pct:0.93, emoji:'👋', msg:'준비됐지?', guide:'칫솔에 힘 빼고~ 부드럽게 잡아요' }},
+  {{ pct:0.86, emoji:'➡️', msg:'윗니 바깥쪽 오른쪽!', guide:'오른쪽 위 어금니 바깥면을 쓸어주세요' }},
+  {{ pct:0.79, emoji:'⬆️', msg:'윗니 바깥쪽 앞니!', guide:'앞니는 칫솔을 세워서 위에서 아래로!' }},
+  {{ pct:0.72, emoji:'⬅️', msg:'윗니 바깥쪽 왼쪽!', guide:'왼쪽 위 어금니도 꼼꼼하게~' }},
+  {{ pct:0.65, emoji:'💪', msg:'잘하고 있어!', guide:'이제 윗니 안쪽! 혀쪽으로 칫솔을 넣어요' }},
+  {{ pct:0.58, emoji:'👅', msg:'윗니 안쪽!', guide:'안쪽은 칫솔을 세워서 살살 닦아요' }},
+  {{ pct:0.50, emoji:'🌟', msg:'절반 왔다! '+NAME+' 최고!', guide:'이제 아랫니! 오른쪽 아래 바깥쪽부터!' }},
+  {{ pct:0.43, emoji:'⬇️', msg:'아랫니 바깥쪽!', guide:'아래쪽은 아래에서 위로 쓸어올려요' }},
+  {{ pct:0.36, emoji:'🦷', msg:'아래 앞니!', guide:'아래 앞니도 칫솔 세워서 닦아요~' }},
+  {{ pct:0.29, emoji:'🔥', msg:'거의 다 왔어!', guide:'왼쪽 아래 어금니 바깥면 쓸어주세요' }},
+  {{ pct:0.22, emoji:'👅', msg:'아랫니 안쪽!', guide:'아랫니 안쪽도 꼼꼼히! 혀를 살짝 올려요' }},
+  {{ pct:0.15, emoji:'🍎', msg:'씹는 면 닦기!', guide:'어금니 윗면을 앞뒤로 왔다갔다~' }},
+  {{ pct:0.08, emoji:'👅', msg:'혀도 닦자!', guide:'혀 위를 안쪽에서 바깥으로 쓸어줘요' }},
+  {{ pct:0.02, emoji:'🏆', msg:'마지막 마무리!', guide:'전체를 한 번 더 훑어줘요!' }},
 ];
+
+const CHEERS = [
+  NAME+', 충치 세균이 도망가고 있어! 🏃',
+  '번쩍번쩍! '+NAME+'의 이가 빛나요! ✨',
+  '치카치카~ '+NAME+' 멋져! 😎',
+  NAME+' 이가 점점 깨끗해지고 있어! 🧼',
+  '세균아 물러가라~ '+NAME+'가 간다! 🦸',
+  '와! '+NAME+' 양치 프로급! 👏',
+  '깨끗한 이 = 건강한 몸! 💚',
+  '잇몸이 좋아하고 있어요! 🥰',
+  '치과 선생님이 칭찬할 거야! 👨‍⚕️',
+  NAME+' 이빨이 다이아몬드처럼! 💎',
+];
+let cheerIdx = 0;
 let lastStageIdx = -1;
+let lastCheerTime = 0;
 
 function getStage(pct) {{
-  for (let i = STAGES.length - 1; i >= 0; i--) {{
-    if (pct <= STAGES[i].pct) return i;
+  for (let i = GUIDE.length - 1; i >= 0; i--) {{
+    if (pct <= GUIDE[i].pct) return i;
   }}
   return 0;
 }}
 
-// ========== AUDIO (Web Audio API) ==========
+// ========== AUDIO ==========
 let audioCtx = null;
 function ensureAudio() {{
   if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
 }}
+function vol() {{ return muted ? 0 : masterVolume; }}
 
 function playTick() {{
-  if (!soundOn) return;
+  if (muted) return;
   ensureAudio();
+  const v = vol();
   const o = audioCtx.createOscillator();
   const g = audioCtx.createGain();
   o.type = 'sine'; o.frequency.value = 880;
-  g.gain.setValueAtTime(0.08, audioCtx.currentTime);
-  g.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.08);
+  g.gain.setValueAtTime(0.25 * v, audioCtx.currentTime);
+  g.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.1);
   o.connect(g); g.connect(audioCtx.destination);
-  o.start(); o.stop(audioCtx.currentTime + 0.08);
+  o.start(); o.stop(audioCtx.currentTime + 0.1);
 }}
 
 function playStageUp() {{
-  if (!soundOn) return;
+  if (muted) return;
   ensureAudio();
-  [523, 659, 784].forEach((f, i) => {{
+  const v = vol();
+  [523,659,784,1047].forEach((f,i) => {{
     const o = audioCtx.createOscillator();
     const g = audioCtx.createGain();
     o.type = 'triangle'; o.frequency.value = f;
-    g.gain.setValueAtTime(0.15, audioCtx.currentTime + i * 0.12);
-    g.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + i * 0.12 + 0.25);
+    g.gain.setValueAtTime(0.35 * v, audioCtx.currentTime + i*0.1);
+    g.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + i*0.1 + 0.3);
     o.connect(g); g.connect(audioCtx.destination);
-    o.start(audioCtx.currentTime + i * 0.12);
-    o.stop(audioCtx.currentTime + i * 0.12 + 0.25);
+    o.start(audioCtx.currentTime + i*0.1);
+    o.stop(audioCtx.currentTime + i*0.1 + 0.3);
+  }});
+}}
+
+function playCheer() {{
+  if (muted) return;
+  ensureAudio();
+  const v = vol();
+  [784,988].forEach((f,i) => {{
+    const o = audioCtx.createOscillator();
+    const g = audioCtx.createGain();
+    o.type = 'triangle'; o.frequency.value = f;
+    g.gain.setValueAtTime(0.2 * v, audioCtx.currentTime + i*0.08);
+    g.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + i*0.08 + 0.2);
+    o.connect(g); g.connect(audioCtx.destination);
+    o.start(audioCtx.currentTime + i*0.08);
+    o.stop(audioCtx.currentTime + i*0.08 + 0.2);
   }});
 }}
 
 function playCelebration() {{
-  if (!soundOn) return;
+  if (muted) return;
   ensureAudio();
-  const notes = [523,587,659,698,784,880,988,1047];
-  notes.forEach((f, i) => {{
+  const v = vol();
+  [523,587,659,698,784,880,988,1047].forEach((f,i) => {{
     const o = audioCtx.createOscillator();
     const g = audioCtx.createGain();
-    o.type = 'square';
-    o.frequency.value = f;
-    g.gain.setValueAtTime(0.10, audioCtx.currentTime + i*0.1);
-    g.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + i*0.1 + 0.35);
+    o.type = 'square'; o.frequency.value = f;
+    g.gain.setValueAtTime(0.22 * v, audioCtx.currentTime + i*0.1);
+    g.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + i*0.1 + 0.4);
     o.connect(g); g.connect(audioCtx.destination);
     o.start(audioCtx.currentTime + i*0.1);
-    o.stop(audioCtx.currentTime + i*0.1 + 0.35);
+    o.stop(audioCtx.currentTime + i*0.1 + 0.4);
   }});
 }}
 
-// BGM - simple looping arpeggio
-let bgmInterval = null;
-let bgmNoteIdx = 0;
-const BGM_NOTES = [262,330,392,523,392,330];
+// BGM - rhythmical melody + bass beat
+let bgmTimer = null;
+let bgmBeat = 0;
+const MELODY = [
+  {{f:523,d:0.18}},{{f:0,d:0.12}},{{f:659,d:0.18}},{{f:0,d:0.12}},
+  {{f:784,d:0.18}},{{f:659,d:0.15}},{{f:523,d:0.18}},{{f:0,d:0.12}},
+  {{f:440,d:0.18}},{{f:0,d:0.12}},{{f:523,d:0.18}},{{f:659,d:0.18}},
+  {{f:784,d:0.25}},{{f:0,d:0.12}},{{f:659,d:0.18}},{{f:523,d:0.18}},
+];
+
 function startBgm() {{
-  if (bgmInterval) return;
-  bgmNoteIdx = 0;
-  bgmInterval = setInterval(() => {{
-    if (!soundOn || paused) return;
+  if (bgmTimer) return;
+  bgmBeat = 0;
+  bgmTimer = setInterval(() => {{
+    if (muted || paused || finished) return;
     ensureAudio();
-    const o = audioCtx.createOscillator();
-    const g = audioCtx.createGain();
-    o.type = 'sine';
-    o.frequency.value = BGM_NOTES[bgmNoteIdx % BGM_NOTES.length];
-    g.gain.setValueAtTime(0.04, audioCtx.currentTime);
-    g.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.3);
-    o.connect(g); g.connect(audioCtx.destination);
-    o.start(); o.stop(audioCtx.currentTime + 0.3);
-    bgmNoteIdx++;
-  }}, 400);
+    const v = vol();
+    const n = MELODY[bgmBeat % MELODY.length];
+    // melody
+    if (n.f > 0) {{
+      const o = audioCtx.createOscillator();
+      const g = audioCtx.createGain();
+      o.type = 'sine'; o.frequency.value = n.f;
+      g.gain.setValueAtTime(0.14 * v, audioCtx.currentTime);
+      g.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + n.d);
+      o.connect(g); g.connect(audioCtx.destination);
+      o.start(); o.stop(audioCtx.currentTime + n.d);
+    }}
+    // bass on even beats
+    if (bgmBeat % 2 === 0) {{
+      const b = audioCtx.createOscillator();
+      const bg = audioCtx.createGain();
+      b.type = 'sine'; b.frequency.value = 196;
+      bg.gain.setValueAtTime(0.1 * v, audioCtx.currentTime);
+      bg.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.15);
+      b.connect(bg); bg.connect(audioCtx.destination);
+      b.start(); b.stop(audioCtx.currentTime + 0.15);
+    }}
+    // percussion tick
+    const p = audioCtx.createOscillator();
+    const pg = audioCtx.createGain();
+    p.type = 'square';
+    p.frequency.value = bgmBeat % 4 === 0 ? 120 : 900;
+    pg.gain.setValueAtTime((bgmBeat % 4 === 0 ? 0.07 : 0.025) * v, audioCtx.currentTime);
+    pg.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.04);
+    p.connect(pg); pg.connect(audioCtx.destination);
+    p.start(); p.stop(audioCtx.currentTime + 0.04);
+    bgmBeat++;
+  }}, 220);
 }}
 function stopBgm() {{
-  clearInterval(bgmInterval);
-  bgmInterval = null;
+  clearInterval(bgmTimer); bgmTimer = null;
 }}
 
-function toggleSound() {{
-  soundOn = !soundOn;
-  document.getElementById('soundBtn').textContent = soundOn ? '🔊' : '🔇';
-  if (!soundOn) stopBgm(); else if (!finished && !paused) startBgm();
+// ========== VOLUME CONTROLS ==========
+function toggleMute() {{
+  muted = !muted;
+  document.getElementById('muteBtn').textContent = muted ? '🔇' : '🔊';
+  if (muted) stopBgm();
+  else if (!finished && !paused) startBgm();
+}}
+function changeVolume(val) {{
+  masterVolume = val / 100;
+  document.getElementById('volLabel').textContent = val + '%';
+  if (val == 0) {{
+    muted = true;
+    document.getElementById('muteBtn').textContent = '🔇';
+  }} else if (muted) {{
+    muted = false;
+    document.getElementById('muteBtn').textContent = '🔊';
+    if (!finished && !paused) startBgm();
+  }}
 }}
 
 // ========== RENDER ==========
 function render() {{
   const pct = remaining / TOTAL;
-  const offset = CIRC * (1 - pct);
-  ring.style.strokeDashoffset = offset;
+  ring.style.strokeDashoffset = CIRC * (1 - pct);
 
   const m = Math.floor(remaining / 60);
   const s = remaining % 60;
   display.textContent = m + ':' + String(s).padStart(2,'0');
 
+  const elapsed = TOTAL - remaining;
   const idx = getStage(pct);
+
+  // Guide stage change
   if (idx !== lastStageIdx) {{
     lastStageIdx = idx;
-    const st = STAGES[idx];
-    stageArea.innerHTML = '<div class="emoji">' + st.emoji + '</div><div>' + st.msg + '</div>';
+    const st = GUIDE[idx];
+    stageArea.innerHTML =
+      '<div class="emoji">' + st.emoji + '</div>' +
+      '<div><strong>' + st.msg + '</strong></div>' +
+      '<div class="guide">' + st.guide + '</div>';
     if (idx > 0) playStageUp();
+    lastCheerTime = elapsed;
+  }}
+  // Encouragement between stages (every 7 sec)
+  else if (elapsed - lastCheerTime >= 7 && remaining > 5) {{
+    lastCheerTime = elapsed;
+    const c = CHEERS[cheerIdx % CHEERS.length];
+    cheerIdx++;
+    const g = stageArea.querySelector('.guide');
+    if (g) {{
+      const orig = g.textContent;
+      g.innerHTML = '💬 ' + c;
+      g.style.background = 'rgba(255,243,224,0.9)';
+      setTimeout(() => {{
+        g.textContent = orig;
+        g.style.background = '';
+      }}, 3000);
+    }}
+    playCheer();
   }}
 }}
 
@@ -329,30 +495,27 @@ function spawnConfetti() {{
 function tick() {{
   if (paused || finished) return;
   remaining--;
-  if (remaining % 5 === 0) playTick();
+  if (remaining % 3 === 0) playTick();
   render();
-  if (remaining <= 0) {{
-    finish();
-  }}
+  if (remaining <= 0) finish();
 }}
 
 function finish() {{
   finished = true;
-  clearInterval(interval);
-  stopBgm();
-  playCelebration();
-  spawnConfetti();
+  clearInterval(interval); stopBgm();
+  playCelebration(); spawnConfetti();
   document.getElementById('timerScreen').style.display = 'none';
   const cel = document.getElementById('celebScreen');
   cel.style.display = 'flex';
-
   const msgs = [
-    NAME + '! 양치 완료! 반짝반짝 깨끗한 이! ✨',
-    '대단해 ' + NAME + '! 충치 걱정 없는 하루! 🦷💎',
-    NAME + '의 이가 보석처럼 빛나요! 💎🌟',
+    NAME+'! 양치 완료! 반짝반짝 깨끗한 이! ✨',
+    '대단해 '+NAME+'! 충치 걱정 없는 하루! 🦷💎',
+    NAME+'의 이가 보석처럼 빛나요! 💎🌟',
+    '완벽한 양치! '+NAME+' 치과 선생님도 감동! 👏',
+    NAME+'! 세균 퇴치 미션 완료! 🦸✨',
   ];
   document.getElementById('celebMsg').textContent = msgs[Math.floor(Math.random()*msgs.length)];
-  document.getElementById('celebSub').textContent = '오늘도 양치 미션 클리어! 🏅';
+  document.getElementById('celebSub').textContent = '구석구석 깨끗하게! 오늘도 양치 미션 클리어! 🏅';
   setTimeout(spawnConfetti, 1500);
 }}
 
@@ -364,13 +527,13 @@ function togglePause() {{
 
 function addTime(sec) {{
   if (finished) return;
-  remaining += sec;
-  render();
+  remaining += sec; render();
 }}
 
 function resetTimer() {{
   finished = false; paused = false;
   remaining = TOTAL; lastStageIdx = -1;
+  lastCheerTime = 0; cheerIdx = 0;
   clearInterval(interval); stopBgm();
   document.getElementById('timerScreen').style.display = 'block';
   document.getElementById('celebScreen').style.display = 'none';
@@ -380,9 +543,7 @@ function resetTimer() {{
   startBgm();
 }}
 
-function restart() {{
-  resetTimer();
-}}
+function restart() {{ resetTimer(); }}
 
 // ========== INIT ==========
 render();
@@ -392,4 +553,4 @@ startBgm();
 </body>
 </html>
 """
-    components.html(html, height=620, scrolling=False)
+    components.html(html, height=680, scrolling=False)
