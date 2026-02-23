@@ -371,6 +371,7 @@ if start:
 * {{ margin:0; padding:0; box-sizing:border-box; }}
 body {{
   font-family: 'Segoe UI', 'Apple SD Gothic Neo', 'Malgun Gothic', sans-serif;
+  color: #333;
   background: linear-gradient(135deg,#e0f7fa,#f3e5f5);
   display:flex; justify-content:center; align-items:flex-start;
   min-height:100vh; overflow-x:hidden;
@@ -378,7 +379,7 @@ body {{
 }}
 .container {{
   text-align:center; width:100%; max-width:460px; padding:6px;
-  position:relative;
+  position:relative; overflow:hidden;
 }}
 
 /* ---------- scalable root ---------- */
@@ -444,18 +445,20 @@ body {{
 }}
 
 /* ---------- name header ---------- */
-.name-hdr {{ font-size:clamp(15px,4vw,19px); margin-bottom:2px; }}
+.name-hdr {{ font-size:clamp(15px,4vw,19px); margin-bottom:2px; color:#2e2e2e; text-shadow:0 1px 2px rgba(255,255,255,0.8); }}
 
 /* ---------- stage badge (larger text) ---------- */
 .stage {{
   font-size:clamp(16px,4.5vw,22px); min-height:100px;
   margin:8px 0; transition:all .3s ease;
+  color:#2e2e2e; text-shadow:0 1px 2px rgba(255,255,255,0.8);
 }}
 .stage .emoji {{ font-size:clamp(36px,10vw,50px); animation:bounce .6s ease; }}
 .stage .guide {{
-  background:rgba(255,255,255,0.85); border-radius:14px;
+  background:rgba(255,255,255,0.92); border-radius:14px;
   padding:8px 16px; margin-top:6px; font-weight:600;
-  line-height:1.5; color:#333; display:inline-block;
+  line-height:1.5; color:#1a1a1a; display:inline-block;
+  text-shadow:none;
   font-size:clamp(15px,4vw,19px);
   max-width:95%;
 }}
@@ -466,8 +469,8 @@ body {{
 
 /* ---------- germ effect ---------- */
 .germ {{
-  position:fixed; font-size:28px; pointer-events:none;
-  z-index:9999; animation: germCatch 1.2s ease forwards;
+  position:absolute; font-size:28px; pointer-events:none;
+  z-index:50; animation: germCatch 1.2s ease forwards;
 }}
 @keyframes germCatch {{
   0% {{ opacity:1; transform:scale(1) rotate(0deg); }}
@@ -476,8 +479,8 @@ body {{
   100% {{ opacity:0; transform:scale(0) rotate(540deg); }}
 }}
 .germ-burst {{
-  position:fixed; font-size:22px; pointer-events:none;
-  z-index:9998; animation: burstOut 0.8s ease forwards;
+  position:absolute; font-size:22px; pointer-events:none;
+  z-index:49; animation: burstOut 0.8s ease forwards;
 }}
 @keyframes burstOut {{
   0% {{ opacity:1; transform:translate(0,0) scale(1); }}
@@ -567,7 +570,7 @@ body {{
   <div class="celebration" id="celebScreen">
     <div class="big-emoji">{char_emoji}</div>
     <h2 id="celebMsg"></h2>
-    <p id="celebSub" style="color:#666;font-size:clamp(14px,3.8vw,16px);"></p>
+    <p id="celebSub" style="color:#444;font-size:clamp(14px,3.8vw,16px);"></p>
     <button class="btn btn-add" style="margin-top:10px;font-size:17px;padding:12px 30px;"
       onclick="restart()">{T['restart']}</button>
   </div>
@@ -613,18 +616,23 @@ let cheerIdx = 0;
 let lastStageIdx = -1;
 let lastCheerTime = 0;
 
-// ========== FONT SIZE CONTROL (px-based) ==========
+// ========== FONT SIZE CONTROL (px-based, persistent) ==========
 const BASE_FONT_SIZE = 16;
-function changeFontSize(dir) {{
-  fontStep = Math.max(-2, Math.min(4, fontStep + dir));
+function applyFontSize() {{
   const newSize = BASE_FONT_SIZE + fontStep * 2;
   scalable.style.fontSize = newSize + 'px';
-  // Also update guide text
   document.querySelectorAll('.guide').forEach(g => {{
     g.style.fontSize = (newSize + 1) + 'px';
   }});
+  document.querySelectorAll('.stage > div > strong').forEach(el => {{
+    el.style.fontSize = (newSize + 2) + 'px';
+  }});
   const nameHdr = document.querySelector('.name-hdr');
   if (nameHdr) nameHdr.style.fontSize = (newSize + 3) + 'px';
+}}
+function changeFontSize(dir) {{
+  fontStep = Math.max(-2, Math.min(4, fontStep + dir));
+  applyFontSize();
 }}
 
 function getStage(pct) {{
@@ -646,38 +654,53 @@ function ensureAudio() {{
 }}
 function vol() {{ return muted ? 0 : masterVolume; }}
 
-// Resume audio when returning from another app on mobile
+// Robust audio recovery for mobile app switching
+function tryResumeAudio() {{
+  if (audioCtx && audioCtx.state === 'suspended') {{
+    audioCtx.resume().catch(() => {{}});
+  }}
+}}
+function restartBgmIfNeeded() {{
+  if (!finished && !paused && !muted) {{
+    stopBgm();
+    setTimeout(() => {{
+      if (!bgmTimer && !muted && !paused && !finished) startBgm();
+    }}, 150);
+  }}
+}}
+
 document.addEventListener('visibilitychange', () => {{
   if (document.visibilityState === 'visible') {{
-    if (audioCtx && audioCtx.state === 'suspended') {{
-      audioCtx.resume();
-    }}
-    if (!finished && !paused && !muted) {{
-      stopBgm();
-      startBgm();
-    }}
+    tryResumeAudio();
+    setTimeout(tryResumeAudio, 100);
+    setTimeout(tryResumeAudio, 300);
+    setTimeout(tryResumeAudio, 1000);
+    restartBgmIfNeeded();
   }}
 }});
 
 window.addEventListener('pageshow', (e) => {{
-  if (e.persisted) {{
-    if (audioCtx && audioCtx.state === 'suspended') {{
-      audioCtx.resume();
-    }}
-    if (!finished && !paused && !muted) {{
-      stopBgm();
-      startBgm();
-    }}
-  }}
+  tryResumeAudio();
+  setTimeout(tryResumeAudio, 100);
+  setTimeout(tryResumeAudio, 500);
+  if (e.persisted) restartBgmIfNeeded();
 }});
 
-// One-time touch to unlock audio on iOS
-document.addEventListener('touchstart', function unlockAudio() {{
+window.addEventListener('focus', () => {{
+  tryResumeAudio();
+  if (!finished && !paused && !muted && !bgmTimer) startBgm();
+}});
+
+// Persistent touch/click handler to unlock audio on mobile
+function resumeAudioOnInteraction() {{
   if (audioCtx && audioCtx.state === 'suspended') {{
-    audioCtx.resume();
+    audioCtx.resume().then(() => {{
+      if (!finished && !paused && !muted && !bgmTimer) startBgm();
+    }}).catch(() => {{}});
   }}
-  document.removeEventListener('touchstart', unlockAudio);
-}}, {{ once: true }});
+}}
+document.addEventListener('touchstart', resumeAudioOnInteraction);
+document.addEventListener('click', resumeAudioOnInteraction);
 
 function playTick() {{
   if (muted) return;
@@ -834,14 +857,21 @@ function spawnGerm() {{
   if (now - lastGermTime < 4000) return;
   lastGermTime = now;
 
+  const container = document.getElementById('app');
   const germ = document.createElement('div');
   germ.className = 'germ';
   germ.textContent = GERM_EMOJIS[Math.floor(Math.random()*GERM_EMOJIS.length)];
-  const x = 15 + Math.random() * 70;
-  const y = 20 + Math.random() * 50;
-  germ.style.left = x + 'vw';
-  germ.style.top = y + 'vh';
-  document.body.appendChild(germ);
+  // Position only in the character/timer ring area (top portion)
+  const x = 10 + Math.random() * 80;
+  const timerRing = document.getElementById('timerRing');
+  const ringRect = timerRing.getBoundingClientRect();
+  const contRect = container.getBoundingClientRect();
+  const yMin = Math.max(0, ringRect.top - contRect.top - 20);
+  const yMax = ringRect.bottom - contRect.top + 10;
+  const y = yMin + Math.random() * (yMax - yMin);
+  germ.style.left = x + '%';
+  germ.style.top = y + 'px';
+  container.appendChild(germ);
 
   setTimeout(() => {{
     const sparks = ['✨','💥','⚡','💫'];
@@ -849,12 +879,12 @@ function spawnGerm() {{
       const burst = document.createElement('div');
       burst.className = 'germ-burst';
       burst.textContent = sparks[i];
-      burst.style.left = x + 'vw';
-      burst.style.top = y + 'vh';
+      burst.style.left = x + '%';
+      burst.style.top = y + 'px';
       const angle = (Math.PI * 2 * i) / 4;
       burst.style.setProperty('--dx', Math.cos(angle) * 40 + 'px');
       burst.style.setProperty('--dy', Math.sin(angle) * 40 + 'px');
-      document.body.appendChild(burst);
+      container.appendChild(burst);
       setTimeout(() => burst.remove(), 800);
     }}
     playGermCatch();
@@ -882,6 +912,7 @@ function render() {{
       '<div class="emoji">' + st.emoji + '</div>' +
       '<div><strong>' + st.msg + '</strong></div>' +
       '<div class="guide">' + st.guide + '</div>';
+    applyFontSize();
     if (idx > 0) playStageUp();
     lastCheerTime = elapsed;
   }}
@@ -897,6 +928,7 @@ function render() {{
       setTimeout(() => {{
         g.textContent = orig;
         g.style.background = '';
+        applyFontSize();
       }}, 3000);
     }}
     playCheer();
@@ -971,6 +1003,15 @@ function restart() {{ resetTimer(); }}
 render();
 interval = setInterval(tick, 1000);
 startBgm();
+
+// Auto-scroll timer into view on start
+setTimeout(() => {{
+  try {{
+    if (window.frameElement) {{
+      window.frameElement.scrollIntoView({{behavior:'smooth', block:'center'}});
+    }}
+  }} catch(e) {{}}
+}}, 300);
 </script>
 </body>
 </html>
