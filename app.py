@@ -332,12 +332,81 @@ CHARACTERS = {
 st.markdown(
     """
 <style>
-    .stApp { background: linear-gradient(135deg, #e0f7fa 0%, #f3e5f5 100%); }
+    /* ===== 전체 배경 ===== */
+    .stApp { background: linear-gradient(135deg, #e0f7fa 0%, #f3e5f5 100%) !important; }
     div[data-testid="stMainBlockContainer"] { max-width: 500px; }
-    h1 { text-align: center; }
+
+    /* ===== 타이틀 / 서브타이틀 ===== */
+    h1 { text-align: center; color: #222 !important; font-size: 1.8rem !important; }
+
+    /* ===== 설정 카드 ===== */
     .setup-card {
-        background: white; border-radius: 20px; padding: 30px;
+        background: white !important; border-radius: 20px; padding: 24px 20px;
         box-shadow: 0 4px 20px rgba(0,0,0,0.08); margin: 10px 0;
+    }
+
+    /* ===== 위젯 라벨 (다크 모드에서도 진한 색 강제) ===== */
+    [data-testid="stWidgetLabel"] p,
+    [data-testid="stWidgetLabel"] label {
+        font-size: 1.15rem !important;
+        font-weight: 600 !important;
+        color: #2c2c2c !important;
+    }
+
+    /* ===== 입력 필드 ===== */
+    .stTextInput input {
+        font-size: 1.1rem !important;
+        color: #222 !important;
+        background: #fafafa !important;
+        border: 1.5px solid #ccc !important;
+    }
+    .stTextInput input::placeholder { color: #999 !important; }
+
+    /* ===== Selectbox / 드롭다운 ===== */
+    [data-baseweb="select"] {
+        font-size: 1.05rem !important;
+    }
+    [data-baseweb="select"] span,
+    [data-baseweb="select"] div[class*="value"] {
+        color: #222 !important;
+        font-size: 1.05rem !important;
+    }
+    [data-baseweb="select"] > div {
+        background: #fafafa !important;
+        border-color: #ccc !important;
+    }
+
+    /* ===== 슬라이더 ===== */
+    [data-testid="stTickBarMin"] p,
+    [data-testid="stTickBarMax"] p {
+        font-size: 1rem !important;
+        color: #444 !important;
+        font-weight: 500 !important;
+    }
+    .stSlider [data-testid="stThumbValue"] {
+        color: #222 !important;
+        font-size: 0.95rem !important;
+    }
+
+    /* ===== 라디오 버튼 (모드 선택) ===== */
+    .stRadio [role="radiogroup"] label p {
+        font-size: 1.1rem !important;
+        color: #333 !important;
+        font-weight: 500 !important;
+    }
+
+    /* ===== 시작 버튼 ===== */
+    .stButton button[kind="primary"],
+    .stButton button[data-testid="stBaseButton-primary"] {
+        font-size: 1.2rem !important;
+        padding: 0.6rem 1.2rem !important;
+        font-weight: 700 !important;
+    }
+
+    /* ===== 드롭다운 메뉴 옵션 ===== */
+    [data-baseweb="menu"] li {
+        font-size: 1.05rem !important;
+        color: #222 !important;
     }
 </style>
 """,
@@ -351,7 +420,7 @@ T = TEXTS[lang]
 
 st.markdown(f"# {T['title']}")
 st.markdown(
-    f"<p style='text-align:center;color:#666;'>{T['subtitle']}</p>",
+    f"<p style='text-align:center;color:#444;font-size:1.1rem;font-weight:500;'>{T['subtitle']}</p>",
     unsafe_allow_html=True,
 )
 
