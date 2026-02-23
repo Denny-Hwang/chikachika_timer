@@ -23,6 +23,10 @@ TEXTS = {
         "name_placeholder": "이름을 입력하세요",
         "time_label": "⏱️ 양치 시간 선택",
         "char_label": "🐾 캐릭터 선택",
+        "mode_label": "📱 모드",
+        "mode_basic": "기본",
+        "mode_mirror": "🪞 거울",
+        "cam_unavail": "📷 카메라를 사용할 수 없어요",
         "start_btn": "🚀 양치 시작!",
         "time_opts": {"1분": 60, "1분 30초": 90, "2분": 120, "2분 30초": 150, "3분": 180},
         "default_time": "2분",
@@ -79,6 +83,10 @@ TEXTS = {
         "name_placeholder": "Enter your name",
         "time_label": "⏱️ Brushing time",
         "char_label": "🐾 Choose character",
+        "mode_label": "📱 Mode",
+        "mode_basic": "Basic",
+        "mode_mirror": "🪞 Mirror",
+        "cam_unavail": "📷 Camera unavailable",
         "start_btn": "🚀 Start Brushing!",
         "time_opts": {"1 min": 60, "1m 30s": 90, "2 min": 120, "2m 30s": 150, "3 min": 180},
         "default_time": "2 min",
@@ -135,6 +143,10 @@ TEXTS = {
         "name_placeholder": "请输入名字",
         "time_label": "⏱️ 刷牙时间",
         "char_label": "🐾 选择角色",
+        "mode_label": "📱 模式",
+        "mode_basic": "基本",
+        "mode_mirror": "🪞 镜子",
+        "cam_unavail": "📷 无法使用相机",
         "start_btn": "🚀 开始刷牙！",
         "time_opts": {"1分钟": 60, "1分30秒": 90, "2分钟": 120, "2分30秒": 150, "3分钟": 180},
         "default_time": "2分钟",
@@ -191,6 +203,10 @@ TEXTS = {
         "name_placeholder": "Escribe tu nombre",
         "time_label": "⏱️ Tiempo de cepillado",
         "char_label": "🐾 Elige personaje",
+        "mode_label": "📱 Modo",
+        "mode_basic": "Básico",
+        "mode_mirror": "🪞 Espejo",
+        "cam_unavail": "📷 Cámara no disponible",
         "start_btn": "🚀 ¡A cepillarse!",
         "time_opts": {"1 min": 60, "1m 30s": 90, "2 min": 120, "2m 30s": 150, "3 min": 180},
         "default_time": "2 min",
@@ -247,6 +263,10 @@ TEXTS = {
         "name_placeholder": "名前を入れてね",
         "time_label": "⏱️ 歯みがき時間",
         "char_label": "🐾 キャラクターを選ぼう",
+        "mode_label": "📱 モード",
+        "mode_basic": "きほん",
+        "mode_mirror": "🪞 ミラー",
+        "cam_unavail": "📷 カメラが使えません",
         "start_btn": "🚀 歯みがきスタート！",
         "time_opts": {"1分": 60, "1分30秒": 90, "2分": 120, "2分30秒": 150, "3分": 180},
         "default_time": "2分",
@@ -346,6 +366,9 @@ selected_seconds = time_opts[selected_label]
 
 char_choice = st.selectbox(T["char_label"], list(CHARACTERS.keys()), index=0)
 char_emoji = CHARACTERS[char_choice]
+
+mode = st.radio(T["mode_label"], [T["mode_basic"], T["mode_mirror"]], horizontal=True)
+mirror_mode = mode == T["mode_mirror"]
 
 st.markdown("</div>", unsafe_allow_html=True)
 
@@ -487,6 +510,30 @@ body {{
   100% {{ opacity:0; transform:translate(var(--dx),var(--dy)) scale(0.3); }}
 }}
 
+/* ---------- mirror mode ---------- */
+.mirror-container {{
+  display:none; position:relative;
+  width:min(300px, 78vw); aspect-ratio:4/3;
+  margin:0 auto 8px; border-radius:20px;
+  overflow:hidden; background:#111;
+  border:3px solid rgba(255,255,255,0.5);
+  box-shadow:0 4px 15px rgba(0,0,0,0.15);
+}}
+.mirror-video {{
+  width:100%; height:100%; object-fit:cover;
+  transform:scaleX(-1);
+}}
+.mirror-char-badge {{
+  position:absolute; bottom:8px; left:10px;
+  font-size:30px; filter:drop-shadow(0 2px 3px rgba(0,0,0,0.4));
+  animation:charBounce 2s ease-in-out infinite;
+}}
+.mirror-no-cam {{
+  color:#aaa; font-size:14px;
+  position:absolute; top:50%; left:50%;
+  transform:translate(-50%,-50%); text-align:center;
+}}
+
 /* ---------- buttons ---------- */
 .btn-row {{ display:flex; gap:6px; justify-content:center; flex-wrap:wrap; margin:8px 0; }}
 .btn {{
@@ -539,6 +586,11 @@ body {{
   <!-- Timer screen -->
   <div id="timerScreen" class="scalable">
     <div class="char-face" id="charFace">{char_emoji}</div>
+    <div class="mirror-container" id="mirrorContainer">
+      <video id="mirrorVideo" class="mirror-video" autoplay playsinline muted></video>
+      <div class="mirror-char-badge">{char_emoji}</div>
+      <div class="mirror-no-cam" id="mirrorNoCam" style="display:none;">{T['cam_unavail']}</div>
+    </div>
     <div class="name-hdr"><strong>{name}</strong>{T['timer_title']}</div>
 
     <div class="timer-ring" id="timerRing">
@@ -591,6 +643,7 @@ let interval = null;
 let masterVolume = 0.7;
 let muted = false;
 let fontStep = 0;
+const MIRROR_MODE = {'true' if mirror_mode else 'false'};
 
 const CIRC = 2 * Math.PI * 88;
 const ring = document.getElementById('ring');
@@ -963,6 +1016,7 @@ function tick() {{
 function finish() {{
   finished = true;
   clearInterval(interval); stopBgm();
+  if (MIRROR_MODE) stopCamera();
   playCelebration(); spawnConfetti();
   document.getElementById('timerScreen').style.display = 'none';
   const cel = document.getElementById('celebScreen');
@@ -986,6 +1040,7 @@ function addTime(sec) {{
 
 function resetTimer() {{
   finished = false; paused = false;
+  if (MIRROR_MODE) startCamera();
   remaining = TOTAL; lastStageIdx = -1;
   lastCheerTime = 0; cheerIdx = 0;
   clearInterval(interval); stopBgm();
@@ -999,10 +1054,37 @@ function resetTimer() {{
 
 function restart() {{ resetTimer(); }}
 
+// ========== MIRROR MODE CAMERA ==========
+async function startCamera() {{
+  try {{
+    const stream = await navigator.mediaDevices.getUserMedia({{
+      video: {{ facingMode: 'user', width: {{ ideal: 640 }}, height: {{ ideal: 480 }} }},
+      audio: false
+    }});
+    document.getElementById('mirrorVideo').srcObject = stream;
+  }} catch(err) {{
+    document.getElementById('mirrorNoCam').style.display = 'block';
+    document.getElementById('mirrorVideo').style.display = 'none';
+  }}
+}}
+function stopCamera() {{
+  const video = document.getElementById('mirrorVideo');
+  if (video && video.srcObject) {{
+    video.srcObject.getTracks().forEach(t => t.stop());
+    video.srcObject = null;
+  }}
+}}
+
 // ========== INIT ==========
 render();
 interval = setInterval(tick, 1000);
 startBgm();
+
+if (MIRROR_MODE) {{
+  document.getElementById('mirrorContainer').style.display = 'block';
+  document.querySelector('.char-face').style.display = 'none';
+  startCamera();
+}}
 
 // Auto-scroll timer into view on start
 setTimeout(() => {{
@@ -1016,4 +1098,4 @@ setTimeout(() => {{
 </body>
 </html>
 """
-    components.html(html, height=700, scrolling=False)
+    components.html(html, height=780 if mirror_mode else 700, scrolling=False)
