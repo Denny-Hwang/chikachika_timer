@@ -339,12 +339,6 @@ st.markdown(
     /* ===== 타이틀 / 서브타이틀 ===== */
     h1 { text-align: center; color: #222 !important; font-size: 1.8rem !important; }
 
-    /* ===== 설정 카드 ===== */
-    .setup-card {
-        background: white !important; border-radius: 20px; padding: 24px 20px;
-        box-shadow: 0 4px 20px rgba(0,0,0,0.08); margin: 10px 0;
-    }
-
     /* ===== 위젯 라벨 (다크 모드에서도 진한 색 강제) ===== */
     [data-testid="stWidgetLabel"] p,
     [data-testid="stWidgetLabel"] label {
@@ -362,18 +356,17 @@ st.markdown(
     }
     .stTextInput input::placeholder { color: #999 !important; }
 
-    /* ===== Selectbox / 드롭다운 ===== */
-    [data-baseweb="select"] {
-        font-size: 1.05rem !important;
-    }
-    [data-baseweb="select"] span,
-    [data-baseweb="select"] div[class*="value"] {
+    /* ===== Selectbox / 드롭다운 (선택 전·후 모두) ===== */
+    [data-baseweb="select"] * {
         color: #222 !important;
         font-size: 1.05rem !important;
     }
-    [data-baseweb="select"] > div {
+    [data-baseweb="select"] > div:first-child {
         background: #fafafa !important;
-        border-color: #ccc !important;
+        border: 1.5px solid #bbb !important;
+    }
+    [data-baseweb="select"] svg {
+        fill: #555 !important;
     }
 
     /* ===== 슬라이더 ===== */
@@ -425,8 +418,6 @@ st.markdown(
 )
 
 # --- Setup UI ---
-st.markdown('<div class="setup-card">', unsafe_allow_html=True)
-
 user_name = st.text_input(T["name_label"], placeholder=T["name_placeholder"])
 
 time_opts = T["time_opts"]
@@ -438,8 +429,6 @@ char_emoji = CHARACTERS[char_choice]
 
 mode = st.radio(T["mode_label"], [T["mode_basic"], T["mode_mirror"]], horizontal=True)
 mirror_mode = mode == T["mode_mirror"]
-
-st.markdown("</div>", unsafe_allow_html=True)
 
 start = st.button(T["start_btn"], use_container_width=True, type="primary")
 
