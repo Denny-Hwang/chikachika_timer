@@ -38,6 +38,9 @@ TEXTS = {
         "resume": "▶️ 계속하기",
         "reset": "🔄 초기화",
         "restart": "🔄 다시 하기",
+        "share_btn": "📤 공유하기",
+        "save_btn": "💾 사진 저장",
+        "photo_msg": "📸 찰칵! 양치 중 인증샷!",
         "celeb_sub": "구석구석 깨끗하게! 오늘도 양치 미션 클리어! 🏅",
         "guide": [
             {"pct":1.00,"emoji":"🪥","msg":"{name}! 양치 시작!","guide":"칫솔을 잇몸과 45도로 기울여 잡아요"},
@@ -98,6 +101,9 @@ TEXTS = {
         "resume": "▶️ Resume",
         "reset": "🔄 Reset",
         "restart": "🔄 Again",
+        "share_btn": "📤 Share",
+        "save_btn": "💾 Save Photo",
+        "photo_msg": "📸 Snap! Brushing selfie!",
         "celeb_sub": "Every corner is clean! Brushing mission complete! 🏅",
         "guide": [
             {"pct":1.00,"emoji":"🪥","msg":"{name}! Let's brush!","guide":"Tilt the brush 45° against the gums"},
@@ -158,6 +164,9 @@ TEXTS = {
         "resume": "▶️ 继续",
         "reset": "🔄 重置",
         "restart": "🔄 再来一次",
+        "share_btn": "📤 分享",
+        "save_btn": "💾 保存照片",
+        "photo_msg": "📸 咔嚓！刷牙自拍！",
         "celeb_sub": "每个角落都干净了！今天的刷牙任务完成！🏅",
         "guide": [
             {"pct":1.00,"emoji":"🪥","msg":"{name}！开始刷牙！","guide":"把牙刷倾斜45度对着牙龈"},
@@ -218,6 +227,9 @@ TEXTS = {
         "resume": "▶️ Continuar",
         "reset": "🔄 Reiniciar",
         "restart": "🔄 Otra vez",
+        "share_btn": "📤 Compartir",
+        "save_btn": "💾 Guardar foto",
+        "photo_msg": "📸 ¡Clic! ¡Selfie cepillándose!",
         "celeb_sub": "¡Cada rincón está limpio! ¡Misión de cepillado completada! 🏅",
         "guide": [
             {"pct":1.00,"emoji":"🪥","msg":"¡{name}! ¡A cepillarse!","guide":"Inclina el cepillo 45° contra las encías"},
@@ -278,6 +290,9 @@ TEXTS = {
         "resume": "▶️ つづき",
         "reset": "🔄 リセット",
         "restart": "🔄 もういちど",
+        "share_btn": "📤 シェア",
+        "save_btn": "💾 写真を保存",
+        "photo_msg": "📸 パシャ！歯みがきセルフィー！",
         "celeb_sub": "すみずみまでピカピカ！今日の歯みがきミッションクリア！🏅",
         "guide": [
             {"pct":1.00,"emoji":"🪥","msg":"{name}！歯みがきスタート！","guide":"歯ブラシを歯ぐきに45度に当てよう"},
@@ -592,6 +607,40 @@ body {{
   transform:translate(-50%,-50%); text-align:center;
 }}
 
+/* ---------- photo capture ---------- */
+.photo-countdown {{
+  position:absolute; inset:0;
+  background:rgba(0,0,0,0.35);
+  font-size:clamp(60px,18vw,90px); font-weight:900;
+  color:#fff; z-index:10;
+  display:none; justify-content:center; align-items:center;
+  text-shadow:0 4px 12px rgba(0,0,0,0.5);
+}}
+.photo-flash {{
+  display:none; position:absolute; inset:0;
+  background:#fff; z-index:11; pointer-events:none;
+}}
+.celeb-photo-wrap {{
+  display:none; position:relative;
+  border-radius:16px; overflow:hidden;
+  border:4px solid #ffd54f;
+  box-shadow:0 4px 20px rgba(0,0,0,0.15);
+  max-width:min(260px, 65vw);
+  animation:fadeIn .5s ease;
+}}
+.celeb-photo-wrap img {{ width:100%; display:block; }}
+.celeb-photo-label {{
+  position:absolute; bottom:0; left:0; right:0;
+  background:linear-gradient(transparent, rgba(0,0,0,0.6));
+  color:#fff; padding:10px 8px 8px; text-align:center;
+  font-size:clamp(12px,3.5vw,15px); font-weight:600;
+}}
+.share-row {{
+  display:none; gap:8px; justify-content:center; flex-wrap:wrap;
+}}
+.btn-share {{ background:#e8f5e9; color:#2e7d32; }}
+.btn-save {{ background:#e3f2fd; color:#1565c0; }}
+
 /* ---------- buttons ---------- */
 .btn-row {{ display:flex; gap:6px; justify-content:center; flex-wrap:wrap; margin:8px 0; }}
 .btn {{
@@ -648,6 +697,8 @@ body {{
       <video id="mirrorVideo" class="mirror-video" autoplay playsinline muted></video>
       <div class="mirror-char-badge">{char_emoji}</div>
       <div class="mirror-no-cam" id="mirrorNoCam" style="display:none;">{T['cam_unavail']}</div>
+      <div class="photo-countdown" id="photoCountdown"></div>
+      <div class="photo-flash" id="photoFlash"></div>
     </div>
     <div class="name-hdr"><strong>{name}</strong>{T['timer_title']}</div>
 
@@ -680,7 +731,15 @@ body {{
   <div class="celebration" id="celebScreen">
     <div class="big-emoji">{char_emoji}</div>
     <h2 id="celebMsg"></h2>
+    <div class="celeb-photo-wrap" id="celebPhotoWrap">
+      <img id="celebPhoto" src="" alt="">
+      <div class="celeb-photo-label" id="celebPhotoLabel"></div>
+    </div>
     <p id="celebSub" style="color:#444;font-size:clamp(14px,3.8vw,16px);"></p>
+    <div class="share-row" id="shareRow">
+      <button class="btn btn-share" onclick="sharePhoto()">{T['share_btn']}</button>
+      <button class="btn btn-save" onclick="downloadPhoto()">{T['save_btn']}</button>
+    </div>
     <button class="btn btn-add" style="margin-top:10px;font-size:17px;padding:12px 30px;"
       onclick="restart()">{T['restart']}</button>
   </div>
@@ -694,6 +753,7 @@ const CHAR_EMOJI = "{char_emoji}";
 const PAUSE_LABEL = `{T['pause']}`;
 const RESUME_LABEL = `{T['resume']}`;
 const CELEB_SUB = `{T['celeb_sub']}`;
+const PHOTO_MSG = `{T['photo_msg']}`;
 let remaining = TOTAL;
 let paused = false;
 let finished = false;
@@ -702,6 +762,9 @@ let masterVolume = 0.7;
 let muted = false;
 let fontStep = 0;
 const MIRROR_MODE = {'true' if mirror_mode else 'false'};
+let photoDataUrl = null;
+let photoTaken = false;
+let photoTime = 0;
 
 const CIRC = 2 * Math.PI * 88;
 const ring = document.getElementById('ring');
@@ -1068,6 +1131,9 @@ function tick() {{
   if (remaining % 3 === 0) playTick();
   if (remaining > 5 && remaining % 8 === 0) spawnGerm();
   render();
+  if (MIRROR_MODE && !photoTaken && remaining > 0 && remaining === photoTime) {{
+    startPhotoCountdown();
+  }}
   if (remaining <= 0) finish();
 }}
 
@@ -1082,6 +1148,12 @@ function finish() {{
   document.getElementById('celebMsg').textContent =
     CELEB_MSGS[Math.floor(Math.random()*CELEB_MSGS.length)];
   document.getElementById('celebSub').textContent = CELEB_SUB;
+  if (photoDataUrl) {{
+    document.getElementById('celebPhotoWrap').style.display = 'block';
+    document.getElementById('celebPhoto').src = photoDataUrl;
+    document.getElementById('celebPhotoLabel').textContent = PHOTO_MSG;
+    document.getElementById('shareRow').style.display = 'flex';
+  }}
   setTimeout(spawnConfetti, 1500);
 }}
 
@@ -1100,6 +1172,9 @@ function resetTimer() {{
   finished = false; paused = false;
   if (MIRROR_MODE) startCamera();
   remaining = TOTAL; lastStageIdx = -1;
+  document.getElementById('celebPhotoWrap').style.display = 'none';
+  document.getElementById('shareRow').style.display = 'none';
+  initPhotoTime();
   lastCheerTime = 0; cheerIdx = 0;
   clearInterval(interval); stopBgm();
   document.getElementById('timerScreen').style.display = 'block';
@@ -1111,6 +1186,83 @@ function resetTimer() {{
 }}
 
 function restart() {{ resetTimer(); }}
+
+// ========== PHOTO CAPTURE ==========
+function initPhotoTime() {{
+  photoDataUrl = null; photoTaken = false;
+  if (MIRROR_MODE && TOTAL >= 30) {{
+    const minR = Math.floor(TOTAL * 0.3);
+    const maxR = Math.floor(TOTAL * 0.7);
+    photoTime = minR + Math.floor(Math.random() * (maxR - minR));
+  }}
+}}
+
+function startPhotoCountdown() {{
+  photoTaken = true;
+  const overlay = document.getElementById('photoCountdown');
+  overlay.style.display = 'flex';
+  let count = 3;
+  overlay.textContent = count;
+  playTick();
+  const cdInterval = setInterval(() => {{
+    count--;
+    if (count > 0) {{
+      overlay.textContent = count;
+      playTick();
+    }} else {{
+      clearInterval(cdInterval);
+      overlay.textContent = '📸';
+      capturePhoto();
+      setTimeout(() => {{ overlay.style.display = 'none'; }}, 600);
+    }}
+  }}, 1000);
+}}
+
+function capturePhoto() {{
+  const video = document.getElementById('mirrorVideo');
+  if (!video || !video.srcObject) return;
+  const canvas = document.createElement('canvas');
+  canvas.width = video.videoWidth || 640;
+  canvas.height = video.videoHeight || 480;
+  const ctx = canvas.getContext('2d');
+  ctx.translate(canvas.width, 0);
+  ctx.scale(-1, 1);
+  ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+  photoDataUrl = canvas.toDataURL('image/jpeg', 0.85);
+  // flash
+  const flash = document.getElementById('photoFlash');
+  flash.style.display = 'block';
+  setTimeout(() => {{ flash.style.display = 'none'; }}, 200);
+}}
+
+async function sharePhoto() {{
+  if (!photoDataUrl) return;
+  try {{
+    const blob = await (await fetch(photoDataUrl)).blob();
+    const file = new File([blob], 'brushing_' + Date.now() + '.jpg', {{ type: 'image/jpeg' }});
+    if (navigator.canShare && navigator.canShare({{ files: [file] }})) {{
+      await navigator.share({{
+        title: CELEB_MSGS[Math.floor(Math.random()*CELEB_MSGS.length)],
+        text: PHOTO_MSG,
+        files: [file]
+      }});
+    }} else if (navigator.share) {{
+      await navigator.share({{ title: PHOTO_MSG, text: PHOTO_MSG }});
+    }} else {{
+      downloadPhoto();
+    }}
+  }} catch(e) {{
+    if (e.name !== 'AbortError') downloadPhoto();
+  }}
+}}
+
+function downloadPhoto() {{
+  if (!photoDataUrl) return;
+  const a = document.createElement('a');
+  a.href = photoDataUrl;
+  a.download = 'brushing_' + Date.now() + '.jpg';
+  a.click();
+}}
 
 // ========== MIRROR MODE CAMERA ==========
 async function startCamera() {{
@@ -1134,6 +1286,7 @@ function stopCamera() {{
 }}
 
 // ========== INIT ==========
+initPhotoTime();
 render();
 interval = setInterval(tick, 1000);
 startBgm();
@@ -1156,4 +1309,4 @@ setTimeout(() => {{
 </body>
 </html>
 """
-    components.html(html, height=780 if mirror_mode else 700, scrolling=False)
+    components.html(html, height=850 if mirror_mode else 700, scrolling=False)
