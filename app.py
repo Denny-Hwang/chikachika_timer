@@ -754,6 +754,8 @@ const PAUSE_LABEL = `{T['pause']}`;
 const RESUME_LABEL = `{T['resume']}`;
 const CELEB_SUB = `{T['celeb_sub']}`;
 const PHOTO_MSG = `{T['photo_msg']}`;
+const APP_TITLE = `{T['title']}`;
+let celebMsgText = '';
 let remaining = TOTAL;
 let paused = false;
 let finished = false;
@@ -1145,8 +1147,8 @@ function finish() {{
   document.getElementById('timerScreen').style.display = 'none';
   const cel = document.getElementById('celebScreen');
   cel.style.display = 'flex';
-  document.getElementById('celebMsg').textContent =
-    CELEB_MSGS[Math.floor(Math.random()*CELEB_MSGS.length)];
+  celebMsgText = CELEB_MSGS[Math.floor(Math.random()*CELEB_MSGS.length)];
+  document.getElementById('celebMsg').textContent = celebMsgText;
   document.getElementById('celebSub').textContent = CELEB_SUB;
   if (photoDataUrl) {{
     document.getElementById('celebPhotoWrap').style.display = 'block';
@@ -1235,19 +1237,133 @@ function capturePhoto() {{
   setTimeout(() => {{ flash.style.display = 'none'; }}, 200);
 }}
 
+// ========== CERTIFICATE CANVAS ==========
+function rrect(ctx, x, y, w, h, r) {{
+  ctx.beginPath();
+  ctx.moveTo(x+r,y);
+  ctx.lineTo(x+w-r,y); ctx.quadraticCurveTo(x+w,y,x+w,y+r);
+  ctx.lineTo(x+w,y+h-r); ctx.quadraticCurveTo(x+w,y+h,x+w-r,y+h);
+  ctx.lineTo(x+r,y+h); ctx.quadraticCurveTo(x,y+h,x,y+h-r);
+  ctx.lineTo(x,y+r); ctx.quadraticCurveTo(x,y,x+r,y);
+  ctx.closePath();
+}}
+function certWrap(ctx, text, x, y, maxW, lh) {{
+  let line = '', curY = y;
+  for (let i = 0; i < text.length; i++) {{
+    const t = line + text[i];
+    if (ctx.measureText(t).width > maxW && line) {{
+      ctx.fillText(line, x, curY); line = text[i]; curY += lh;
+    }} else {{ line = t; }}
+  }}
+  if (line) ctx.fillText(line, x, curY);
+  return curY;
+}}
+
+function generateCertificate() {{
+  return new Promise((resolve) => {{
+    const W = 600, H = 880;
+    const cv = document.createElement('canvas');
+    cv.width = W; cv.height = H;
+    const c = cv.getContext('2d');
+    const font = '"Segoe UI","Apple SD Gothic Neo","Malgun Gothic",sans-serif';
+
+    // background gradient
+    const bg = c.createLinearGradient(0,0,W,H);
+    bg.addColorStop(0,'#e0f7fa'); bg.addColorStop(1,'#f3e5f5');
+    c.fillStyle = bg; c.fillRect(0,0,W,H);
+
+    // gold double border
+    c.strokeStyle = '#ffd54f'; c.lineWidth = 6;
+    rrect(c,18,18,W-36,H-36,22); c.stroke();
+    c.strokeStyle = 'rgba(255,213,79,0.35)'; c.lineWidth = 2;
+    rrect(c,30,30,W-60,H-60,18); c.stroke();
+
+    // star decorations (corners)
+    c.font = '22px sans-serif'; c.textAlign = 'center';
+    c.fillText('⭐',52,56); c.fillText('⭐',W-52,56);
+    c.fillText('⭐',52,H-36); c.fillText('⭐',W-52,H-36);
+
+    // title
+    c.font = `bold 30px ${{font}}`; c.fillStyle = '#333'; c.textAlign = 'center';
+    c.fillText(APP_TITLE, W/2, 82);
+
+    // divider line
+    c.strokeStyle = '#e0e0e0'; c.lineWidth = 1;
+    c.beginPath(); c.moveTo(80,98); c.lineTo(W-80,98); c.stroke();
+
+    // character emoji
+    c.font = '68px sans-serif';
+    c.fillText(CHAR_EMOJI, W/2, 175);
+
+    // celebration message
+    c.font = `bold 26px ${{font}}`; c.fillStyle = '#2e2e2e';
+    const msgY = certWrap(c, celebMsgText, W/2, 220, W-100, 34);
+
+    const drawBottom = (startY) => {{
+      // sub message
+      c.font = `17px ${{font}}`; c.fillStyle = '#555';
+      const subY = certWrap(c, CELEB_SUB, W/2, startY, W-90, 24);
+
+      // date
+      const d = new Date();
+      const ds = d.getFullYear()+'.' +
+        String(d.getMonth()+1).padStart(2,'0')+'.' +
+        String(d.getDate()).padStart(2,'0');
+      c.font = `15px ${{font}}`; c.fillStyle = '#aaa';
+      c.fillText(ds, W/2, subY + 42);
+
+      // medal
+      c.font = '48px sans-serif';
+      c.fillText('🏅', W/2, subY + 98);
+
+      resolve(cv.toDataURL('image/jpeg', 0.92));
+    }};
+
+    if (photoDataUrl) {{
+      const img = new Image();
+      img.onload = () => {{
+        const pw = 320, ph = 240;
+        const px = (W-pw)/2, py = msgY + 32;
+
+        // gold frame
+        c.fillStyle = '#ffd54f';
+        rrect(c, px-5, py-5, pw+10, ph+10, 14); c.fill();
+
+        // photo clipped to rounded rect
+        c.save();
+        rrect(c, px, py, pw, ph, 10); c.clip();
+        c.drawImage(img, px, py, pw, ph);
+
+        // label overlay at bottom of photo
+        c.fillStyle = 'rgba(0,0,0,0.45)';
+        c.fillRect(px, py+ph-34, pw, 34);
+        c.font = `bold 15px ${{font}}`; c.fillStyle = '#fff';
+        c.textAlign = 'center';
+        c.fillText(PHOTO_MSG, W/2, py+ph-12);
+        c.restore();
+
+        drawBottom(py + ph + 36);
+      }};
+      img.src = photoDataUrl;
+    }} else {{
+      drawBottom(msgY + 32);
+    }}
+  }});
+}}
+
 async function sharePhoto() {{
-  if (!photoDataUrl) return;
   try {{
-    const blob = await (await fetch(photoDataUrl)).blob();
-    const file = new File([blob], 'brushing_' + Date.now() + '.jpg', {{ type: 'image/jpeg' }});
+    const certUrl = await generateCertificate();
+    const blob = await (await fetch(certUrl)).blob();
+    const file = new File([blob], 'brushing_cert_' + Date.now() + '.jpg', {{ type: 'image/jpeg' }});
     if (navigator.canShare && navigator.canShare({{ files: [file] }})) {{
       await navigator.share({{
-        title: CELEB_MSGS[Math.floor(Math.random()*CELEB_MSGS.length)],
+        title: celebMsgText,
         text: PHOTO_MSG,
         files: [file]
       }});
     }} else if (navigator.share) {{
-      await navigator.share({{ title: PHOTO_MSG, text: PHOTO_MSG }});
+      await navigator.share({{ title: celebMsgText, text: PHOTO_MSG }});
     }} else {{
       downloadPhoto();
     }}
@@ -1256,11 +1372,11 @@ async function sharePhoto() {{
   }}
 }}
 
-function downloadPhoto() {{
-  if (!photoDataUrl) return;
+async function downloadPhoto() {{
+  const certUrl = await generateCertificate();
   const a = document.createElement('a');
-  a.href = photoDataUrl;
-  a.download = 'brushing_' + Date.now() + '.jpg';
+  a.href = certUrl;
+  a.download = 'brushing_cert_' + Date.now() + '.jpg';
   a.click();
 }}
 
