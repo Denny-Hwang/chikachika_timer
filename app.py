@@ -27,6 +27,7 @@ TEXTS = {
         "mode_basic": "기본",
         "mode_mirror": "🪞 거울",
         "cam_unavail": "📷 카메라를 사용할 수 없어요",
+        "selfie_toggle": "📸 인증샷 촬영",
         "start_btn": "🚀 양치 시작!",
         "time_opts": {"1분": 60, "1분 30초": 90, "2분": 120, "2분 30초": 150, "3분": 180},
         "default_time": "2분",
@@ -90,6 +91,7 @@ TEXTS = {
         "mode_basic": "Basic",
         "mode_mirror": "🪞 Mirror",
         "cam_unavail": "📷 Camera unavailable",
+        "selfie_toggle": "📸 Take selfie",
         "start_btn": "🚀 Start Brushing!",
         "time_opts": {"1 min": 60, "1m 30s": 90, "2 min": 120, "2m 30s": 150, "3 min": 180},
         "default_time": "2 min",
@@ -153,6 +155,7 @@ TEXTS = {
         "mode_basic": "基本",
         "mode_mirror": "🪞 镜子",
         "cam_unavail": "📷 无法使用相机",
+        "selfie_toggle": "📸 拍照认证",
         "start_btn": "🚀 开始刷牙！",
         "time_opts": {"1分钟": 60, "1分30秒": 90, "2分钟": 120, "2分30秒": 150, "3分钟": 180},
         "default_time": "2分钟",
@@ -216,6 +219,7 @@ TEXTS = {
         "mode_basic": "Básico",
         "mode_mirror": "🪞 Espejo",
         "cam_unavail": "📷 Cámara no disponible",
+        "selfie_toggle": "📸 Tomar selfie",
         "start_btn": "🚀 ¡A cepillarse!",
         "time_opts": {"1 min": 60, "1m 30s": 90, "2 min": 120, "2m 30s": 150, "3 min": 180},
         "default_time": "2 min",
@@ -279,6 +283,7 @@ TEXTS = {
         "mode_basic": "きほん",
         "mode_mirror": "🪞 ミラー",
         "cam_unavail": "📷 カメラが使えません",
+        "selfie_toggle": "📸 セルフィー撮影",
         "start_btn": "🚀 歯みがきスタート！",
         "time_opts": {"1分": 60, "1分30秒": 90, "2分": 120, "2分30秒": 150, "3分": 180},
         "default_time": "2分",
@@ -442,8 +447,9 @@ selected_seconds = time_opts[selected_label]
 char_choice = st.selectbox(T["char_label"], list(CHARACTERS.keys()), index=0)
 char_emoji = CHARACTERS[char_choice]
 
-mode = st.radio(T["mode_label"], [T["mode_basic"], T["mode_mirror"]], horizontal=True)
+mode = st.radio(T["mode_label"], [T["mode_basic"], T["mode_mirror"]], horizontal=True, index=1)
 mirror_mode = mode == T["mode_mirror"]
+selfie_enabled = st.checkbox(T["selfie_toggle"], value=True) if mirror_mode else False
 
 start = st.button(T["start_btn"], use_container_width=True, type="primary")
 
@@ -641,6 +647,19 @@ body {{
 .btn-share {{ background:#e8f5e9; color:#2e7d32; }}
 .btn-save {{ background:#e3f2fd; color:#1565c0; }}
 
+/* ---------- filters ---------- */
+.filter-row {{
+  display:none; gap:4px; justify-content:center;
+  margin:4px 0; flex-wrap:wrap;
+}}
+.filter-btn {{
+  font-size:20px; padding:3px 7px; border:2px solid transparent;
+  border-radius:10px; background:rgba(255,255,255,0.85);
+  cursor:pointer; transition:transform .1s;
+}}
+.filter-btn:active {{ transform:scale(.9); }}
+.filter-btn.active {{ border-color:#42a5f5; background:#e3f2fd; }}
+
 /* ---------- buttons ---------- */
 .btn-row {{ display:flex; gap:6px; justify-content:center; flex-wrap:wrap; margin:8px 0; }}
 .btn {{
@@ -699,6 +718,15 @@ body {{
       <div class="mirror-no-cam" id="mirrorNoCam" style="display:none;">{T['cam_unavail']}</div>
       <div class="photo-countdown" id="photoCountdown"></div>
       <div class="photo-flash" id="photoFlash"></div>
+    </div>
+    <div class="filter-row" id="filterRow">
+      <button class="filter-btn active" onclick="setFilter(0)">🔄</button>
+      <button class="filter-btn" onclick="setFilter(1)">🌅</button>
+      <button class="filter-btn" onclick="setFilter(2)">🧊</button>
+      <button class="filter-btn" onclick="setFilter(3)">🎨</button>
+      <button class="filter-btn" onclick="setFilter(4)">🖤</button>
+      <button class="filter-btn" onclick="setFilter(5)">✨</button>
+      <button class="filter-btn" onclick="setFilter(6)">🌈</button>
     </div>
     <div class="name-hdr"><strong>{name}</strong>{T['timer_title']}</div>
 
@@ -767,6 +795,17 @@ const MIRROR_MODE = {'true' if mirror_mode else 'false'};
 let photoDataUrl = null;
 let photoTaken = false;
 let photoTime = 0;
+const SELFIE_ENABLED = {'true' if selfie_enabled else 'false'};
+const FILTERS = [
+  {{emoji:'🔄',css:'none'}},
+  {{emoji:'🌅',css:'sepia(0.35) saturate(1.4) brightness(1.05)'}},
+  {{emoji:'🧊',css:'sepia(0.15) hue-rotate(200deg) saturate(0.8) brightness(1.1)'}},
+  {{emoji:'🎨',css:'saturate(2) contrast(1.2) brightness(1.05)'}},
+  {{emoji:'🖤',css:'grayscale(1) contrast(1.15)'}},
+  {{emoji:'✨',css:'brightness(1.25) contrast(0.95) saturate(1.3)'}},
+  {{emoji:'🌈',css:'hue-rotate(90deg) saturate(1.5) brightness(1.05)'}},
+];
+let currentFilter = 0;
 
 const CIRC = 2 * Math.PI * 88;
 const ring = document.getElementById('ring');
@@ -1133,7 +1172,7 @@ function tick() {{
   if (remaining % 3 === 0) playTick();
   if (remaining > 5 && remaining % 8 === 0) spawnGerm();
   render();
-  if (MIRROR_MODE && !photoTaken && remaining > 0 && remaining === photoTime) {{
+  if (MIRROR_MODE && SELFIE_ENABLED && !photoTaken && remaining > 0 && remaining === photoTime) {{
     startPhotoCountdown();
   }}
   if (remaining <= 0) finish();
@@ -1189,10 +1228,19 @@ function resetTimer() {{
 
 function restart() {{ resetTimer(); }}
 
+// ========== FILTER ==========
+function setFilter(idx) {{
+  currentFilter = idx;
+  document.getElementById('mirrorVideo').style.filter = FILTERS[idx].css;
+  document.querySelectorAll('.filter-btn').forEach((b,i) => {{
+    b.classList.toggle('active', i === idx);
+  }});
+}}
+
 // ========== PHOTO CAPTURE ==========
 function initPhotoTime() {{
   photoDataUrl = null; photoTaken = false;
-  if (MIRROR_MODE && TOTAL >= 30) {{
+  if (MIRROR_MODE && SELFIE_ENABLED && TOTAL >= 30) {{
     const minR = Math.floor(TOTAL * 0.3);
     const maxR = Math.floor(TOTAL * 0.7);
     photoTime = minR + Math.floor(Math.random() * (maxR - minR));
@@ -1227,9 +1275,11 @@ function capturePhoto() {{
   canvas.width = video.videoWidth || 640;
   canvas.height = video.videoHeight || 480;
   const ctx = canvas.getContext('2d');
+  if (FILTERS[currentFilter].css !== 'none') ctx.filter = FILTERS[currentFilter].css;
   ctx.translate(canvas.width, 0);
   ctx.scale(-1, 1);
   ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+  ctx.filter = 'none';
   photoDataUrl = canvas.toDataURL('image/jpeg', 0.85);
   // flash
   const flash = document.getElementById('photoFlash');
@@ -1322,7 +1372,11 @@ function generateCertificate() {{
     if (photoDataUrl) {{
       const img = new Image();
       img.onload = () => {{
-        const pw = 320, ph = 240;
+        const maxPW = 320, maxPH = 280;
+        const imgR = img.naturalWidth / img.naturalHeight;
+        let pw, ph;
+        if (imgR > maxPW / maxPH) {{ pw = maxPW; ph = Math.round(maxPW / imgR); }}
+        else {{ ph = maxPH; pw = Math.round(maxPH * imgR); }}
         const px = (W-pw)/2, py = msgY + 32;
 
         // gold frame
@@ -1410,6 +1464,7 @@ startBgm();
 if (MIRROR_MODE) {{
   document.getElementById('mirrorContainer').style.display = 'block';
   document.querySelector('.char-face').style.display = 'none';
+  document.getElementById('filterRow').style.display = 'flex';
   startCamera();
 }}
 
@@ -1425,4 +1480,4 @@ setTimeout(() => {{
 </body>
 </html>
 """
-    components.html(html, height=850 if mirror_mode else 700, scrolling=False)
+    components.html(html, height=880 if mirror_mode else 700, scrolling=False)
