@@ -647,18 +647,31 @@ body {{
 .btn-share {{ background:#e8f5e9; color:#2e7d32; }}
 .btn-save {{ background:#e3f2fd; color:#1565c0; }}
 
-/* ---------- filters ---------- */
-.filter-row {{
-  display:none; gap:4px; justify-content:center;
-  margin:4px 0; flex-wrap:wrap;
+/* ---------- face effects ---------- */
+.effect-canvas {{
+  position:absolute; top:0; left:0;
+  width:100%; height:100%; pointer-events:none;
 }}
-.filter-btn {{
-  font-size:20px; padding:3px 7px; border:2px solid transparent;
+.effect-row {{
+  display:none; flex-direction:column; align-items:center;
+  gap:3px; margin:4px 0;
+}}
+.effect-cats, .effect-items {{
+  display:flex; gap:3px; justify-content:center; flex-wrap:wrap;
+}}
+.effect-cat-btn, .effect-item-btn {{
+  font-size:19px; padding:3px 7px; border:2px solid transparent;
   border-radius:10px; background:rgba(255,255,255,0.85);
   cursor:pointer; transition:transform .1s;
 }}
-.filter-btn:active {{ transform:scale(.9); }}
-.filter-btn.active {{ border-color:#42a5f5; background:#e3f2fd; }}
+.effect-cat-btn:active, .effect-item-btn:active {{ transform:scale(.9); }}
+.effect-cat-btn.active {{ border-color:#42a5f5; background:#e3f2fd; }}
+.effect-item-btn.active {{ border-color:#ff9800; background:#fff3e0; }}
+.effect-loading {{
+  display:none; position:absolute; bottom:6px; right:6px;
+  font-size:11px; color:#fff; background:rgba(0,0,0,0.5);
+  padding:2px 8px; border-radius:8px;
+}}
 
 /* ---------- buttons ---------- */
 .btn-row {{ display:flex; gap:6px; justify-content:center; flex-wrap:wrap; margin:8px 0; }}
@@ -714,19 +727,22 @@ body {{
     <div class="char-face" id="charFace">{char_emoji}</div>
     <div class="mirror-container" id="mirrorContainer">
       <video id="mirrorVideo" class="mirror-video" autoplay playsinline muted></video>
+      <canvas id="effectCanvas" class="effect-canvas"></canvas>
       <div class="mirror-char-badge">{char_emoji}</div>
+      <div class="effect-loading" id="effectLoading">Loading...</div>
       <div class="mirror-no-cam" id="mirrorNoCam" style="display:none;">{T['cam_unavail']}</div>
       <div class="photo-countdown" id="photoCountdown"></div>
       <div class="photo-flash" id="photoFlash"></div>
     </div>
-    <div class="filter-row" id="filterRow">
-      <button class="filter-btn active" onclick="setFilter(0)">🔄</button>
-      <button class="filter-btn" onclick="setFilter(1)">🌅</button>
-      <button class="filter-btn" onclick="setFilter(2)">🧊</button>
-      <button class="filter-btn" onclick="setFilter(3)">🎨</button>
-      <button class="filter-btn" onclick="setFilter(4)">🖤</button>
-      <button class="filter-btn" onclick="setFilter(5)">✨</button>
-      <button class="filter-btn" onclick="setFilter(6)">🌈</button>
+    <div class="effect-row" id="effectRow">
+      <div class="effect-cats">
+        <button class="effect-cat-btn" onclick="selectCat(-1)">🔄</button>
+        <button class="effect-cat-btn" onclick="selectCat(0)">🎩</button>
+        <button class="effect-cat-btn" onclick="selectCat(1)">👓</button>
+        <button class="effect-cat-btn" onclick="selectCat(2)">🥸</button>
+        <button class="effect-cat-btn" onclick="selectCat(3)">🐾</button>
+      </div>
+      <div class="effect-items" id="effectItems"></div>
     </div>
     <div class="name-hdr"><strong>{name}</strong>{T['timer_title']}</div>
 
@@ -796,16 +812,16 @@ let photoDataUrl = null;
 let photoTaken = false;
 let photoTime = 0;
 const SELFIE_ENABLED = {'true' if selfie_enabled else 'false'};
-const FILTERS = [
-  {{emoji:'🔄',css:'none'}},
-  {{emoji:'🌅',css:'sepia(0.35) saturate(1.4) brightness(1.05)'}},
-  {{emoji:'🧊',css:'sepia(0.15) hue-rotate(200deg) saturate(0.8) brightness(1.1)'}},
-  {{emoji:'🎨',css:'saturate(2) contrast(1.2) brightness(1.05)'}},
-  {{emoji:'🖤',css:'grayscale(1) contrast(1.15)'}},
-  {{emoji:'✨',css:'brightness(1.25) contrast(0.95) saturate(1.3)'}},
-  {{emoji:'🌈',css:'hue-rotate(90deg) saturate(1.5) brightness(1.05)'}},
+const EFFECT_CATS = [
+  {{emoji:'🎩',items:['👑','🎩','🎀','🌸']}},
+  {{emoji:'👓',items:['⭐','💖','🕶️','🌈']}},
+  {{emoji:'🥸',items:['🤡','🐽','🥸','😺']}},
+  {{emoji:'🐾',items:['🐱','🐰','🦋','✨']}},
 ];
-let currentFilter = 0;
+let activeEffect=null, activeCat=-1;
+let faceLandmarks=null, fmInstance=null;
+let efxCanvas=null, efxCtx=null;
+let animFr=0, fmReady=false;
 
 const CIRC = 2 * Math.PI * 88;
 const ring = document.getElementById('ring');
@@ -1211,7 +1227,7 @@ function addTime(sec) {{
 
 function resetTimer() {{
   finished = false; paused = false;
-  if (MIRROR_MODE) startCamera();
+  if (MIRROR_MODE) {{ startCamera(); if(fmReady) efxLoop(); }}
   remaining = TOTAL; lastStageIdx = -1;
   document.getElementById('celebPhotoWrap').style.display = 'none';
   document.getElementById('shareRow').style.display = 'none';
@@ -1228,13 +1244,207 @@ function resetTimer() {{
 
 function restart() {{ resetTimer(); }}
 
-// ========== FILTER ==========
-function setFilter(idx) {{
-  currentFilter = idx;
-  document.getElementById('mirrorVideo').style.filter = FILTERS[idx].css;
-  document.querySelectorAll('.filter-btn').forEach((b,i) => {{
-    b.classList.toggle('active', i === idx);
-  }});
+// ========== FACE EFFECTS ==========
+function selectCat(idx) {{
+  activeCat=idx; activeEffect=null;
+  const items=document.getElementById('effectItems');
+  document.querySelectorAll('.effect-cat-btn').forEach((b,i)=>b.classList.toggle('active',i===idx+1));
+  if(idx<0){{items.innerHTML='';return;}}
+  items.innerHTML=EFFECT_CATS[idx].items.map(e=>
+    `<button class="effect-item-btn" onclick="selectEffect('${{e}}')">${{e}}</button>`
+  ).join('');
+}}
+function selectEffect(e){{
+  activeEffect=(activeEffect===e)?null:e;
+  document.querySelectorAll('.effect-item-btn').forEach(b=>
+    b.classList.toggle('active',b.textContent===activeEffect));
+}}
+
+async function loadFaceMesh(){{
+  const el=document.getElementById('effectLoading');
+  if(el)el.style.display='block';
+  try{{
+    await new Promise((res,rej)=>{{
+      const s=document.createElement('script');
+      s.src='https://cdn.jsdelivr.net/npm/@mediapipe/face_mesh@0.4/face_mesh.js';
+      s.onload=res;s.onerror=rej;document.head.appendChild(s);
+    }});
+    fmInstance=new FaceMesh({{
+      locateFile:f=>`https://cdn.jsdelivr.net/npm/@mediapipe/face_mesh@0.4/${{f}}`
+    }});
+    fmInstance.setOptions({{
+      maxNumFaces:1,refineLandmarks:false,
+      minDetectionConfidence:0.5,minTrackingConfidence:0.5
+    }});
+    fmInstance.onResults(r=>{{
+      faceLandmarks=(r.multiFaceLandmarks&&r.multiFaceLandmarks.length>0)
+        ?r.multiFaceLandmarks[0]:null;
+    }});
+    await fmInstance.initialize();
+    fmReady=true;
+    if(el)el.style.display='none';
+    efxLoop();
+  }}catch(e){{
+    console.log('FaceMesh failed:',e);
+    if(el){{el.textContent='⚠️';}}
+  }}
+}}
+
+function initEfxCanvas(){{
+  efxCanvas=document.getElementById('effectCanvas');
+  if(!efxCanvas)return;
+  const mc=document.getElementById('mirrorContainer');
+  efxCanvas.width=mc.clientWidth;
+  efxCanvas.height=mc.clientHeight;
+  efxCtx=efxCanvas.getContext('2d');
+}}
+
+async function efxLoop(){{
+  if(finished||!fmReady)return;
+  const v=document.getElementById('mirrorVideo');
+  if(v&&v.readyState>=2&&fmInstance){{
+    try{{await fmInstance.send({{image:v}});}}catch(e){{}}
+  }}
+  renderEfx();
+  animFr++;
+  requestAnimationFrame(efxLoop);
+}}
+
+function _d(a,b){{return Math.hypot(a.x-b.x,a.y-b.y);}}
+
+function mapPts(lm,w,h,objFit){{
+  if(objFit){{
+    const v=document.getElementById('mirrorVideo');
+    const vw=v.videoWidth||640,vh=v.videoHeight||480;
+    const sc=Math.max(w/vw,h/vh);
+    const dw=vw*sc,dh=vh*sc,ox=(w-dw)/2,oy=(h-dh)/2;
+    return lm.map(l=>({{x:w-(l.x*dw+ox),y:l.y*dh+oy}}));
+  }}
+  return lm.map(l=>({{x:(1-l.x)*w,y:l.y*h}}));
+}}
+
+function renderEfx(){{
+  if(!efxCtx)return;
+  efxCtx.clearRect(0,0,efxCanvas.width,efxCanvas.height);
+  if(!activeEffect||!faceLandmarks)return;
+  const pts=mapPts(faceLandmarks,efxCanvas.width,efxCanvas.height,true);
+  drawEfx(efxCtx,activeEffect,pts,animFr);
+}}
+
+function renderEfxCapture(ctx,w,h){{
+  if(!activeEffect||!faceLandmarks)return;
+  const pts=mapPts(faceLandmarks,w,h,false);
+  drawEfx(ctx,activeEffect,pts,animFr);
+}}
+
+function drawEfx(ctx,eff,p,fr){{
+  const top=p[10],chin=p[152],nose=p[1],lE=p[33],rE=p[263];
+  const mth=p[0],lEar=p[234],rEar=p[454];
+  const s=_d(top,chin);
+  const eyeC={{x:(lE.x+rE.x)/2,y:(lE.y+rE.y)/2}};
+  ctx.textAlign='center';ctx.textBaseline='middle';
+  switch(eff){{
+  /* ===== HEAD ===== */
+  case '👑':ctx.font=`${{s*.55}}px sans-serif`;ctx.fillText('👑',top.x,top.y-s*.15);break;
+  case '🎩':ctx.font=`${{s*.6}}px sans-serif`;ctx.fillText('🎩',top.x,top.y-s*.22);break;
+  case '🎀':ctx.font=`${{s*.35}}px sans-serif`;ctx.fillText('🎀',top.x+s*.3,top.y-s*.05);break;
+  case '🌸':{{
+    ctx.font=`${{s*.2}}px sans-serif`;
+    for(let i=0;i<5;i++){{
+      const a=-Math.PI*.8+i*Math.PI*.4,r=s*.35;
+      ctx.fillText('🌸',top.x+Math.cos(a)*r,top.y+Math.sin(a)*r*.5-s*.08);
+    }}break;
+  }}
+  /* ===== GLASSES ===== */
+  case '⭐':{{
+    ctx.font=`${{s*.28}}px sans-serif`;
+    ctx.fillText('⭐',lE.x,lE.y);ctx.fillText('⭐',rE.x,rE.y);break;
+  }}
+  case '💖':{{
+    ctx.font=`${{s*.28}}px sans-serif`;
+    ctx.fillText('💖',lE.x,lE.y);ctx.fillText('💖',rE.x,rE.y);break;
+  }}
+  case '🕶️':ctx.font=`${{s*.5}}px sans-serif`;ctx.fillText('🕶️',eyeC.x,eyeC.y);break;
+  case '🌈':{{
+    ctx.lineWidth=s*.03;
+    const cols=['#ff0000','#ff7700','#ffff00','#00ff00','#0077ff','#8b00ff'];
+    for(let i=0;i<cols.length;i++){{
+      ctx.strokeStyle=cols[i];ctx.beginPath();
+      ctx.arc(top.x,top.y+s*.05,s*.38+i*s*.025,Math.PI,0);ctx.stroke();
+    }}break;
+  }}
+  /* ===== FACE ===== */
+  case '🤡':{{
+    ctx.fillStyle='#ff1744';ctx.beginPath();
+    ctx.arc(nose.x,nose.y,s*.08,0,Math.PI*2);ctx.fill();
+    ctx.fillStyle='rgba(255,100,100,0.3)';ctx.beginPath();
+    ctx.arc(nose.x,nose.y,s*.12,0,Math.PI*2);ctx.fill();break;
+  }}
+  case '🐽':ctx.font=`${{s*.3}}px sans-serif`;ctx.fillText('🐽',nose.x,nose.y);break;
+  case '🥸':{{
+    ctx.strokeStyle='#5d4037';ctx.lineWidth=s*.03;ctx.lineCap='round';
+    [-1,1].forEach(d=>{{
+      ctx.beginPath();ctx.moveTo(nose.x+d*s*.02,mth.y-s*.05);
+      ctx.quadraticCurveTo(nose.x+d*s*.15,mth.y-s*.1,nose.x+d*s*.2,mth.y-s*.02);
+      ctx.quadraticCurveTo(nose.x+d*s*.22,mth.y+s*.02,nose.x+d*s*.18,mth.y-s*.06);
+      ctx.stroke();
+    }});break;
+  }}
+  case '😺':{{
+    ctx.strokeStyle='#555';ctx.lineWidth=s*.015;ctx.lineCap='round';
+    [-1,1].forEach(d=>{{
+      for(let i=-1;i<=1;i++){{
+        ctx.beginPath();ctx.moveTo(nose.x+d*s*.04,nose.y+s*.02);
+        ctx.lineTo(nose.x+d*s*.25,nose.y+i*s*.06);ctx.stroke();
+      }}
+    }});
+    ctx.fillStyle='#ff69b4';ctx.beginPath();
+    ctx.arc(nose.x,nose.y+s*.01,s*.035,0,Math.PI*2);ctx.fill();break;
+  }}
+  /* ===== ANIMALS ===== */
+  case '🐱':{{
+    const es=s*.22;
+    [-1,1].forEach(d=>{{
+      const ex=top.x+d*s*.28,ey=top.y-s*.05;
+      ctx.fillStyle='#ff9800';ctx.beginPath();
+      ctx.moveTo(ex-es*.5*d,ey);ctx.lineTo(ex,ey-es);ctx.lineTo(ex+es*.5*d,ey);ctx.fill();
+      ctx.fillStyle='#ffe0b2';ctx.beginPath();
+      ctx.moveTo(ex-es*.3*d,ey-es*.1);ctx.lineTo(ex,ey-es*.7);
+      ctx.lineTo(ex+es*.3*d,ey-es*.1);ctx.fill();
+    }});
+    ctx.fillStyle='#ff69b4';ctx.beginPath();
+    ctx.arc(nose.x,nose.y,s*.03,0,Math.PI*2);ctx.fill();break;
+  }}
+  case '🐰':{{
+    [-1,1].forEach(d=>{{
+      const ex=top.x+d*s*.18,ey=top.y-s*.1;
+      ctx.fillStyle='#fff';ctx.beginPath();
+      ctx.ellipse(ex,ey-s*.22,s*.08,s*.22,d*.15,0,Math.PI*2);ctx.fill();
+      ctx.strokeStyle='#eee';ctx.lineWidth=1;ctx.stroke();
+      ctx.fillStyle='#ffb6c1';ctx.beginPath();
+      ctx.ellipse(ex,ey-s*.2,s*.045,s*.15,d*.15,0,Math.PI*2);ctx.fill();
+    }});break;
+  }}
+  case '🦋':{{
+    const bx=nose.x+Math.sin(fr*.06)*s*.5;
+    const by=eyeC.y-s*.2+Math.cos(fr*.04)*s*.15;
+    ctx.font=`${{s*.3}}px sans-serif`;ctx.fillText('🦋',bx,by);
+    for(let i=1;i<=3;i++){{
+      ctx.globalAlpha=1-i*.25;
+      ctx.font=`${{s*(.12-i*.02)}}px sans-serif`;
+      ctx.fillText('✨',bx-Math.sin((fr-i*5)*.06)*s*.1*i,by+i*s*.06);
+    }}ctx.globalAlpha=1;break;
+  }}
+  case '✨':{{
+    for(let i=0;i<6;i++){{
+      const a=fr*.04+i*Math.PI*2/6;
+      const r=s*.5+Math.sin(fr*.06+i)*s*.08;
+      const sz=s*(.12+Math.sin(fr*.08+i*2)*.04);
+      ctx.font=`${{sz}}px sans-serif`;
+      ctx.fillText('✨',nose.x+Math.cos(a)*r,nose.y+Math.sin(a)*r*.7);
+    }}break;
+  }}
+  }}
 }}
 
 // ========== PHOTO CAPTURE ==========
@@ -1275,11 +1485,11 @@ function capturePhoto() {{
   canvas.width = video.videoWidth || 640;
   canvas.height = video.videoHeight || 480;
   const ctx = canvas.getContext('2d');
-  if (FILTERS[currentFilter].css !== 'none') ctx.filter = FILTERS[currentFilter].css;
   ctx.translate(canvas.width, 0);
   ctx.scale(-1, 1);
   ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
-  ctx.filter = 'none';
+  ctx.setTransform(1,0,0,1,0,0);
+  renderEfxCapture(ctx, canvas.width, canvas.height);
   photoDataUrl = canvas.toDataURL('image/jpeg', 0.85);
   // flash
   const flash = document.getElementById('photoFlash');
@@ -1464,8 +1674,9 @@ startBgm();
 if (MIRROR_MODE) {{
   document.getElementById('mirrorContainer').style.display = 'block';
   document.querySelector('.char-face').style.display = 'none';
-  document.getElementById('filterRow').style.display = 'flex';
+  document.getElementById('effectRow').style.display = 'flex';
   startCamera();
+  setTimeout(() => {{ initEfxCanvas(); loadFaceMesh(); }}, 200);
 }}
 
 // Auto-scroll timer into view on start
