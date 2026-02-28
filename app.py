@@ -28,6 +28,7 @@ TEXTS = {
         "mode_mirror": "🪞 거울",
         "cam_unavail": "📷 카메라를 사용할 수 없어요",
         "selfie_toggle": "📸 인증샷 촬영",
+        "effect_prompt": "✨ 효과를 골라보세요!",
         "start_btn": "🚀 양치 시작!",
         "time_opts": {"1분": 60, "1분 30초": 90, "2분": 120, "2분 30초": 150, "3분": 180},
         "default_time": "2분",
@@ -92,6 +93,7 @@ TEXTS = {
         "mode_mirror": "🪞 Mirror",
         "cam_unavail": "📷 Camera unavailable",
         "selfie_toggle": "📸 Take selfie",
+        "effect_prompt": "✨ Choose your effect!",
         "start_btn": "🚀 Start Brushing!",
         "time_opts": {"1 min": 60, "1m 30s": 90, "2 min": 120, "2m 30s": 150, "3 min": 180},
         "default_time": "2 min",
@@ -156,6 +158,7 @@ TEXTS = {
         "mode_mirror": "🪞 镜子",
         "cam_unavail": "📷 无法使用相机",
         "selfie_toggle": "📸 拍照认证",
+        "effect_prompt": "✨ 选一个效果吧！",
         "start_btn": "🚀 开始刷牙！",
         "time_opts": {"1分钟": 60, "1分30秒": 90, "2分钟": 120, "2分30秒": 150, "3分钟": 180},
         "default_time": "2分钟",
@@ -220,6 +223,7 @@ TEXTS = {
         "mode_mirror": "🪞 Espejo",
         "cam_unavail": "📷 Cámara no disponible",
         "selfie_toggle": "📸 Tomar selfie",
+        "effect_prompt": "✨ ¡Elige un efecto!",
         "start_btn": "🚀 ¡A cepillarse!",
         "time_opts": {"1 min": 60, "1m 30s": 90, "2 min": 120, "2m 30s": 150, "3 min": 180},
         "default_time": "2 min",
@@ -284,6 +288,7 @@ TEXTS = {
         "mode_mirror": "🪞 ミラー",
         "cam_unavail": "📷 カメラが使えません",
         "selfie_toggle": "📸 セルフィー撮影",
+        "effect_prompt": "✨ エフェクトを選んでね！",
         "start_btn": "🚀 歯みがきスタート！",
         "time_opts": {"1分": 60, "1分30秒": 90, "2分": 120, "2分30秒": 150, "3分": 180},
         "default_time": "2分",
@@ -652,26 +657,21 @@ body {{
   position:absolute; top:0; left:0;
   width:100%; height:100%; pointer-events:none;
 }}
-.effect-row {{
-  display:none; flex-direction:column; align-items:center;
-  gap:3px; margin:4px 0;
-}}
 .effect-cats {{
-  display:flex; gap:4px; justify-content:center; flex-wrap:wrap;
-  padding:3px 6px; background:rgba(0,0,0,0.06); border-radius:14px;
+  display:flex; gap:3px; justify-content:center; flex-wrap:wrap;
+  padding:3px 5px; background:rgba(0,0,0,0.05); border-radius:10px;
 }}
 .effect-items {{
   display:flex; gap:3px; justify-content:center; flex-wrap:wrap;
   padding:2px 0; min-height:28px;
 }}
 .effect-cat-btn {{
-  font-size:22px; padding:4px 10px; border:2px solid rgba(0,0,0,0.08);
-  border-radius:14px; background:rgba(255,255,255,0.95);
+  font-size:17px; padding:3px 7px; border:2px solid rgba(0,0,0,0.06);
+  border-radius:10px; background:rgba(255,255,255,0.9);
   cursor:pointer; transition:transform .1s, background .15s;
-  box-shadow:0 1px 3px rgba(0,0,0,0.1);
 }}
 .effect-cat-btn:active {{ transform:scale(.9); }}
-.effect-cat-btn.active {{ border-color:#42a5f5; background:#bbdefb; box-shadow:0 2px 6px rgba(66,165,245,0.3); }}
+.effect-cat-btn.active {{ border-color:#42a5f5; background:#bbdefb; }}
 .effect-item-btn {{
   font-size:16px; padding:2px; border:2px solid transparent;
   border-radius:50%; background:rgba(255,255,255,0.7);
@@ -685,6 +685,23 @@ body {{
   font-size:11px; color:#fff; background:rgba(0,0,0,0.5);
   padding:2px 8px; border-radius:8px;
 }}
+/* ---------- pre-start ---------- */
+.pre-start {{
+  display:none; flex-direction:column; align-items:center;
+  gap:6px; margin:6px 0; padding:8px;
+  background:rgba(255,255,255,0.6); border-radius:14px;
+}}
+.pre-start-prompt {{
+  font-size:clamp(14px,4vw,17px); font-weight:600; color:#333;
+}}
+.btn-start {{
+  padding:12px 32px; border:none; border-radius:14px;
+  font-size:clamp(15px,4vw,18px); font-weight:700; cursor:pointer;
+  background:linear-gradient(135deg,#42a5f5,#ab47bc); color:#fff;
+  box-shadow:0 3px 10px rgba(66,165,245,0.3);
+  transition:transform .15s;
+}}
+.btn-start:active {{ transform:scale(.95); }}
 
 /* ---------- buttons ---------- */
 .btn-row {{ display:flex; gap:6px; justify-content:center; flex-wrap:wrap; margin:8px 0; }}
@@ -738,6 +755,28 @@ body {{
   <!-- Timer screen -->
   <div id="timerScreen" class="scalable">
     <div class="char-face" id="charFace">{char_emoji}</div>
+
+    <!-- Timer elements (hidden during pre-start in mirror mode) -->
+    <div id="timerElements">
+      <div class="name-hdr"><strong>{name}</strong>{T['timer_title']}</div>
+      <div class="timer-ring" id="timerRing">
+        <svg viewBox="0 0 200 200">
+          <defs>
+            <linearGradient id="grad" x1="0%" y1="0%" x2="100%" y2="0%">
+              <stop offset="0%" style="stop-color:#42a5f5"/>
+              <stop offset="100%" style="stop-color:#ab47bc"/>
+            </linearGradient>
+          </defs>
+          <circle class="bg" cx="100" cy="100" r="88"/>
+          <circle class="fg" id="ring" cx="100" cy="100" r="88"
+            stroke-dasharray="553" stroke-dashoffset="0"/>
+        </svg>
+        <div class="timer-text" id="timeDisplay">0:00</div>
+      </div>
+      <div class="stage" id="stageArea"></div>
+    </div>
+
+    <!-- Mirror (visible in mirror mode, below timer during brushing) -->
     <div class="mirror-container" id="mirrorContainer">
       <video id="mirrorVideo" class="mirror-video" autoplay playsinline muted></video>
       <canvas id="effectCanvas" class="effect-canvas"></canvas>
@@ -747,39 +786,23 @@ body {{
       <div class="photo-countdown" id="photoCountdown"></div>
       <div class="photo-flash" id="photoFlash"></div>
     </div>
-    <div class="effect-row" id="effectRow">
+
+    <!-- Pre-start: effect selector + start (mirror mode only) -->
+    <div class="pre-start" id="preStart">
+      <div class="pre-start-prompt">{T['effect_prompt']}</div>
       <div class="effect-cats">
         <button class="effect-cat-btn" onclick="selectCat(-1)">🔄</button>
         <button class="effect-cat-btn" onclick="selectCat(0)">🎩</button>
         <button class="effect-cat-btn" onclick="selectCat(1)">👓</button>
-        <button class="effect-cat-btn" onclick="selectCat(2)">🥸</button>
+        <button class="effect-cat-btn" onclick="selectCat(2)">😺</button>
         <button class="effect-cat-btn" onclick="selectCat(3)">🐾</button>
         <button class="effect-cat-btn" onclick="selectCat(4)">🎪</button>
-        <button class="effect-cat-btn" onclick="selectCat(5)">🌟</button>
-        <button class="effect-cat-btn" onclick="selectCat(6)">😜</button>
       </div>
       <div class="effect-items" id="effectItems"></div>
-    </div>
-    <div class="name-hdr"><strong>{name}</strong>{T['timer_title']}</div>
-
-    <div class="timer-ring" id="timerRing">
-      <svg viewBox="0 0 200 200">
-        <defs>
-          <linearGradient id="grad" x1="0%" y1="0%" x2="100%" y2="0%">
-            <stop offset="0%" style="stop-color:#42a5f5"/>
-            <stop offset="100%" style="stop-color:#ab47bc"/>
-          </linearGradient>
-        </defs>
-        <circle class="bg" cx="100" cy="100" r="88"/>
-        <circle class="fg" id="ring" cx="100" cy="100" r="88"
-          stroke-dasharray="553" stroke-dashoffset="0"/>
-      </svg>
-      <div class="timer-text" id="timeDisplay">0:00</div>
+      <button class="btn-start" onclick="startBrushing()">{T['start_btn']}</button>
     </div>
 
-    <div class="stage" id="stageArea"></div>
-
-    <div class="btn-row">
+    <div class="btn-row" id="btnRow">
       <button class="btn btn-add" onclick="addTime(10)">{T['add10']}</button>
       <button class="btn btn-add" onclick="addTime(30)">{T['add30']}</button>
       <button class="btn btn-pause" id="pauseBtn" onclick="togglePause()">{T['pause']}</button>
@@ -829,13 +852,11 @@ let photoTaken = false;
 let photoTime = 0;
 const SELFIE_ENABLED = {'true' if selfie_enabled else 'false'};
 const EFFECT_CATS = [
-  {{emoji:'🎩',items:['👑','🎩','🎀','🌸']}},
-  {{emoji:'👓',items:['⭐','💖','🕶️','🌈']}},
-  {{emoji:'🥸',items:['🤡','🐽','🥸','😺']}},
-  {{emoji:'🐾',items:['🐱','🐰','🦋','✨']}},
-  {{emoji:'🎪',items:['🎈','🎉','🪅','🎆']}},
-  {{emoji:'🌟',items:['🧙','😇','🪄','💫']}},
-  {{emoji:'😜',items:['👅','🤪','💀','👻']}},
+  {{emoji:'🎩',items:['👑','🎩','🎀','🌸','🧙','😇']}},
+  {{emoji:'👓',items:['⭐','💖','🕶️','🌈','🤪']}},
+  {{emoji:'😺',items:['🤡','🐽','🥸','😺','👅']}},
+  {{emoji:'🐾',items:['🐱','🐰','🦋','✨','💫']}},
+  {{emoji:'🎪',items:['🎈','🎉','🪅','🎆','🪄','💀','👻']}},
 ];
 let activeEffect=null, activeCat=-1;
 let faceLandmarks=null, fmInstance=null;
@@ -1244,21 +1265,38 @@ function addTime(sec) {{
   remaining += sec; render();
 }}
 
+function startBrushing() {{
+  // Transition from pre-start to timer
+  document.getElementById('preStart').style.display = 'none';
+  document.getElementById('timerElements').style.display = 'block';
+  document.getElementById('btnRow').style.display = 'flex';
+  initPhotoTime();
+  render();
+  interval = setInterval(tick, 1000);
+  startBgm();
+}}
+
 function resetTimer() {{
   finished = false; paused = false;
-  if (MIRROR_MODE) {{ startCamera(); if(fmReady) efxLoop(); }}
   remaining = TOTAL; lastStageIdx = -1;
   document.getElementById('celebPhotoWrap').style.display = 'none';
   document.getElementById('shareRow').style.display = 'none';
-  initPhotoTime();
   lastCheerTime = 0; cheerIdx = 0;
   clearInterval(interval); stopBgm();
   document.getElementById('timerScreen').style.display = 'block';
   document.getElementById('celebScreen').style.display = 'none';
   document.getElementById('pauseBtn').innerHTML = PAUSE_LABEL;
-  render();
-  interval = setInterval(tick, 1000);
-  startBgm();
+  if (MIRROR_MODE) {{
+    startCamera(); if(fmReady) efxLoop();
+    document.getElementById('preStart').style.display = 'flex';
+    document.getElementById('timerElements').style.display = 'none';
+    document.getElementById('btnRow').style.display = 'none';
+  }} else {{
+    initPhotoTime();
+    render();
+    interval = setInterval(tick, 1000);
+    startBgm();
+  }}
 }}
 
 function restart() {{ resetTimer(); }}
@@ -1834,17 +1872,21 @@ function stopCamera() {{
 }}
 
 // ========== INIT ==========
-initPhotoTime();
-render();
-interval = setInterval(tick, 1000);
-startBgm();
-
 if (MIRROR_MODE) {{
+  // Mirror mode: show pre-start screen, don't start timer yet
   document.getElementById('mirrorContainer').style.display = 'block';
   document.querySelector('.char-face').style.display = 'none';
-  document.getElementById('effectRow').style.display = 'flex';
+  document.getElementById('preStart').style.display = 'flex';
+  document.getElementById('timerElements').style.display = 'none';
+  document.getElementById('btnRow').style.display = 'none';
   startCamera();
   setTimeout(() => {{ initEfxCanvas(); loadFaceMesh(); }}, 200);
+}} else {{
+  // Basic mode: start timer immediately
+  initPhotoTime();
+  render();
+  interval = setInterval(tick, 1000);
+  startBgm();
 }}
 
 // Auto-scroll timer into view on start
