@@ -656,16 +656,29 @@ body {{
   display:none; flex-direction:column; align-items:center;
   gap:3px; margin:4px 0;
 }}
-.effect-cats, .effect-items {{
+.effect-cats {{
+  display:flex; gap:4px; justify-content:center; flex-wrap:wrap;
+  padding:3px 6px; background:rgba(0,0,0,0.06); border-radius:14px;
+}}
+.effect-items {{
   display:flex; gap:3px; justify-content:center; flex-wrap:wrap;
+  padding:2px 0; min-height:28px;
 }}
-.effect-cat-btn, .effect-item-btn {{
-  font-size:19px; padding:3px 7px; border:2px solid transparent;
-  border-radius:10px; background:rgba(255,255,255,0.85);
+.effect-cat-btn {{
+  font-size:22px; padding:4px 10px; border:2px solid rgba(0,0,0,0.08);
+  border-radius:14px; background:rgba(255,255,255,0.95);
+  cursor:pointer; transition:transform .1s, background .15s;
+  box-shadow:0 1px 3px rgba(0,0,0,0.1);
+}}
+.effect-cat-btn:active {{ transform:scale(.9); }}
+.effect-cat-btn.active {{ border-color:#42a5f5; background:#bbdefb; box-shadow:0 2px 6px rgba(66,165,245,0.3); }}
+.effect-item-btn {{
+  font-size:16px; padding:2px; border:2px solid transparent;
+  border-radius:50%; background:rgba(255,255,255,0.7);
   cursor:pointer; transition:transform .1s;
+  width:32px; height:32px; display:flex; align-items:center; justify-content:center;
 }}
-.effect-cat-btn:active, .effect-item-btn:active {{ transform:scale(.9); }}
-.effect-cat-btn.active {{ border-color:#42a5f5; background:#e3f2fd; }}
+.effect-item-btn:active {{ transform:scale(.9); }}
 .effect-item-btn.active {{ border-color:#ff9800; background:#fff3e0; }}
 .effect-loading {{
   display:none; position:absolute; bottom:6px; right:6px;
@@ -741,6 +754,9 @@ body {{
         <button class="effect-cat-btn" onclick="selectCat(1)">👓</button>
         <button class="effect-cat-btn" onclick="selectCat(2)">🥸</button>
         <button class="effect-cat-btn" onclick="selectCat(3)">🐾</button>
+        <button class="effect-cat-btn" onclick="selectCat(4)">🎪</button>
+        <button class="effect-cat-btn" onclick="selectCat(5)">🌟</button>
+        <button class="effect-cat-btn" onclick="selectCat(6)">😜</button>
       </div>
       <div class="effect-items" id="effectItems"></div>
     </div>
@@ -817,6 +833,9 @@ const EFFECT_CATS = [
   {{emoji:'👓',items:['⭐','💖','🕶️','🌈']}},
   {{emoji:'🥸',items:['🤡','🐽','🥸','😺']}},
   {{emoji:'🐾',items:['🐱','🐰','🦋','✨']}},
+  {{emoji:'🎪',items:['🎈','🎉','🪅','🎆']}},
+  {{emoji:'🌟',items:['🧙','😇','🪄','💫']}},
+  {{emoji:'😜',items:['👅','🤪','💀','👻']}},
 ];
 let activeEffect=null, activeCat=-1;
 let faceLandmarks=null, fmInstance=null;
@@ -1443,6 +1462,155 @@ function drawEfx(ctx,eff,p,fr){{
       ctx.font=`${{sz}}px sans-serif`;
       ctx.fillText('✨',nose.x+Math.cos(a)*r,nose.y+Math.sin(a)*r*.7);
     }}break;
+  }}
+  /* ===== PARTY ===== */
+  case '🎈':{{
+    [-1,1].forEach((d,i)=>{{
+      const bx=lEar.x*(1-i)+rEar.x*i;
+      const by=top.y-s*.4+Math.sin(fr*.05+i*2)*s*.06;
+      ctx.font=`${{s*.35}}px sans-serif`;
+      ctx.fillText(i?'🎈':'🎈',bx+d*s*.1,by);
+      ctx.strokeStyle='rgba(200,200,200,0.6)';ctx.lineWidth=1;
+      ctx.beginPath();ctx.moveTo(bx+d*s*.1,by+s*.15);
+      ctx.lineTo(bx+d*s*.05,top.y+s*.1);ctx.stroke();
+    }});break;
+  }}
+  case '🎉':{{
+    ctx.font=`${{s*.5}}px sans-serif`;ctx.fillText('🥳',top.x,top.y-s*.25);
+    for(let i=0;i<8;i++){{
+      const a=fr*.08+i*Math.PI/4;
+      const r=s*.4+Math.sin(fr*.1+i)*s*.1;
+      const cols=['#ff1744','#ffea00','#00e676','#2979ff','#d500f9','#ff9100'];
+      ctx.fillStyle=cols[i%cols.length];
+      ctx.globalAlpha=0.7+Math.sin(fr*.1+i)*.3;
+      ctx.beginPath();
+      ctx.arc(top.x+Math.cos(a)*r,top.y-s*.1+Math.sin(a)*r*.5,s*.025,0,Math.PI*2);
+      ctx.fill();
+    }}ctx.globalAlpha=1;break;
+  }}
+  case '🪅':{{
+    for(let i=0;i<12;i++){{
+      const x=nose.x+(Math.sin(i*73+fr*.02)-.5)*s*1.2;
+      const y=top.y-s*.5+((fr*1.5+i*60)%(s*2));
+      const cols=['#ff1744','#ffea00','#00e676','#2979ff','#d500f9','#ff9100','#00bcd4','#e91e63'];
+      ctx.fillStyle=cols[i%cols.length];
+      ctx.globalAlpha=0.8;
+      const sz=s*.02+Math.sin(i+fr*.05)*s*.01;
+      ctx.save();ctx.translate(x,y);ctx.rotate(fr*.1+i);
+      ctx.fillRect(-sz,-sz*.5,sz*2,sz);ctx.restore();
+    }}ctx.globalAlpha=1;break;
+  }}
+  case '🎆':{{
+    for(let b=0;b<3;b++){{
+      const cx=nose.x+Math.sin(b*2.5)*s*.4;
+      const cy=top.y-s*.2+Math.cos(b*3.7)*s*.15;
+      const phase=(fr*.06+b*2.1)%6.28;
+      const burst=Math.sin(phase)*.5+.5;
+      const cols=['#ff1744','#ffea00','#00e5ff','#d500f9','#ff9100','#76ff03'];
+      for(let r=0;r<8;r++){{
+        const a=r*Math.PI/4+b;
+        const dist=burst*s*.3;
+        ctx.fillStyle=cols[(r+b)%cols.length];
+        ctx.globalAlpha=burst*.8;
+        ctx.beginPath();
+        ctx.arc(cx+Math.cos(a)*dist,cy+Math.sin(a)*dist,s*.02*burst,0,Math.PI*2);
+        ctx.fill();
+      }}
+    }}ctx.globalAlpha=1;break;
+  }}
+  /* ===== MAGIC ===== */
+  case '🧙':{{
+    const hw=s*.45,hh=s*.55;
+    ctx.fillStyle='#3f51b5';ctx.beginPath();
+    ctx.moveTo(top.x,top.y-hh-s*.1);
+    ctx.lineTo(top.x-hw,top.y);ctx.lineTo(top.x+hw,top.y);ctx.closePath();ctx.fill();
+    ctx.fillStyle='#ffd54f';ctx.beginPath();
+    ctx.arc(top.x,top.y-hh-s*.05,s*.06,0,Math.PI*2);ctx.fill();
+    ctx.fillStyle='#ffd54f';
+    const stars=['✦','✦','✦'];
+    ctx.font=`${{s*.08}}px sans-serif`;
+    stars.forEach((_,i)=>{{
+      ctx.fillText('✦',top.x+(-1+i)*s*.15,top.y-s*.15-i*s*.12);
+    }});break;
+  }}
+  case '😇':{{
+    ctx.strokeStyle='#ffd54f';ctx.lineWidth=s*.035;
+    ctx.shadowColor='#ffd54f';ctx.shadowBlur=s*.1;
+    ctx.beginPath();
+    ctx.ellipse(top.x,top.y-s*.2,s*.2,s*.06,0,0,Math.PI*2);
+    ctx.stroke();ctx.shadowBlur=0;
+    const glow=0.3+Math.sin(fr*.08)*.2;
+    ctx.strokeStyle=`rgba(255,213,79,${{glow}})`;ctx.lineWidth=s*.06;
+    ctx.beginPath();
+    ctx.ellipse(top.x,top.y-s*.2,s*.22,s*.07,0,0,Math.PI*2);
+    ctx.stroke();break;
+  }}
+  case '🪄':{{
+    const wx=rEar.x+s*.1,wy=eyeC.y;
+    ctx.save();ctx.translate(wx,wy);ctx.rotate(-0.5+Math.sin(fr*.06)*.2);
+    ctx.fillStyle='#5d4037';ctx.fillRect(-s*.02,-s*.35,s*.04,s*.35);
+    ctx.fillStyle='#fff';ctx.fillRect(-s*.03,-s*.38,s*.06,s*.06);
+    ctx.restore();
+    for(let i=0;i<5;i++){{
+      const a=fr*.1+i*1.26;
+      const r2=s*.15+i*s*.04;
+      ctx.globalAlpha=1-i*.18;
+      ctx.font=`${{s*(.08-i*.01)}}px sans-serif`;
+      ctx.fillText('✨',wx+Math.cos(a)*r2,wy-s*.35+Math.sin(a)*r2);
+    }}ctx.globalAlpha=1;break;
+  }}
+  case '💫':{{
+    for(let i=0;i<5;i++){{
+      const a=fr*.05+i*Math.PI*2/5;
+      const r2=s*.45;
+      const x=nose.x+Math.cos(a)*r2;
+      const y=nose.y+Math.sin(a)*r2*.7;
+      const twinkle=0.5+Math.sin(fr*.12+i*1.5)*.5;
+      ctx.globalAlpha=twinkle;
+      ctx.font=`${{s*.15}}px sans-serif`;
+      ctx.fillText('💫',x,y);
+    }}
+    ctx.globalAlpha=0.4+Math.sin(fr*.06)*.2;
+    ctx.strokeStyle='#ffd54f';ctx.lineWidth=s*.01;
+    ctx.beginPath();
+    ctx.ellipse(nose.x,nose.y,s*.48,s*.35,fr*.01,0,Math.PI*2);
+    ctx.stroke();ctx.globalAlpha=1;break;
+  }}
+  /* ===== FUNNY ===== */
+  case '👅':{{
+    ctx.font=`${{s*.3}}px sans-serif`;
+    const ty=mth.y+s*.05+Math.sin(fr*.1)*s*.02;
+    ctx.fillText('👅',mth.x,ty);break;
+  }}
+  case '🤪':{{
+    const er=s*.09;
+    [-1,1].forEach((d,i)=>{{
+      const ex=d<0?lE.x:rE.x,ey=d<0?lE.y:rE.y;
+      ctx.strokeStyle=i?'#ff1744':'#2979ff';ctx.lineWidth=s*.025;
+      ctx.beginPath();
+      for(let t=0;t<4*Math.PI;t+=.2){{
+        const sr=er*(t/(4*Math.PI));
+        const sx=ex+Math.cos(t+fr*.15*d)*sr;
+        const sy=ey+Math.sin(t+fr*.15*d)*sr;
+        t===0?ctx.moveTo(sx,sy):ctx.lineTo(sx,sy);
+      }}ctx.stroke();
+    }});break;
+  }}
+  case '💀':{{
+    ctx.font=`${{s*.7}}px sans-serif`;
+    ctx.globalAlpha=0.5+Math.sin(fr*.08)*.15;
+    ctx.fillText('💀',nose.x,nose.y);
+    ctx.globalAlpha=1;break;
+  }}
+  case '👻':{{
+    for(let i=0;i<4;i++){{
+      const a=fr*.04+i*Math.PI/2;
+      const r2=s*.55+Math.sin(fr*.06+i)*s*.08;
+      const gy=Math.sin(fr*.05+i*1.5)*s*.1;
+      ctx.font=`${{s*.2}}px sans-serif`;
+      ctx.globalAlpha=0.6+Math.sin(fr*.08+i)*.3;
+      ctx.fillText('👻',nose.x+Math.cos(a)*r2,nose.y+Math.sin(a)*r2*.6+gy);
+    }}ctx.globalAlpha=1;break;
   }}
   }}
 }}
