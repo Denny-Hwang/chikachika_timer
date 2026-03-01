@@ -29,6 +29,8 @@ TEXTS = {
         "cam_unavail": "📷 카메라를 사용할 수 없어요",
         "selfie_toggle": "📸 인증샷 촬영",
         "effect_prompt": "✨ 효과를 골라보세요!",
+        "cat_labels": ["없음", "머리", "눈", "얼굴", "동물", "파티"],
+        "pick_prompt": "👇 하나 골라요!",
         "start_btn": "🚀 양치 시작!",
         "time_opts": {"1분": 60, "1분 30초": 90, "2분": 120, "2분 30초": 150, "3분": 180},
         "default_time": "2분",
@@ -94,6 +96,8 @@ TEXTS = {
         "cam_unavail": "📷 Camera unavailable",
         "selfie_toggle": "📸 Take selfie",
         "effect_prompt": "✨ Choose your effect!",
+        "cat_labels": ["None", "Head", "Eyes", "Face", "Animal", "Fun"],
+        "pick_prompt": "👇 Pick one!",
         "start_btn": "🚀 Start Brushing!",
         "time_opts": {"1 min": 60, "1m 30s": 90, "2 min": 120, "2m 30s": 150, "3 min": 180},
         "default_time": "2 min",
@@ -159,6 +163,8 @@ TEXTS = {
         "cam_unavail": "📷 无法使用相机",
         "selfie_toggle": "📸 拍照认证",
         "effect_prompt": "✨ 选一个效果吧！",
+        "cat_labels": ["无", "头饰", "眼睛", "脸部", "动物", "派对"],
+        "pick_prompt": "👇 选一个！",
         "start_btn": "🚀 开始刷牙！",
         "time_opts": {"1分钟": 60, "1分30秒": 90, "2分钟": 120, "2分30秒": 150, "3分钟": 180},
         "default_time": "2分钟",
@@ -224,6 +230,8 @@ TEXTS = {
         "cam_unavail": "📷 Cámara no disponible",
         "selfie_toggle": "📸 Tomar selfie",
         "effect_prompt": "✨ ¡Elige un efecto!",
+        "cat_labels": ["Ninguno", "Cabeza", "Ojos", "Cara", "Animal", "Fiesta"],
+        "pick_prompt": "👇 ¡Elige uno!",
         "start_btn": "🚀 ¡A cepillarse!",
         "time_opts": {"1 min": 60, "1m 30s": 90, "2 min": 120, "2m 30s": 150, "3 min": 180},
         "default_time": "2 min",
@@ -289,6 +297,8 @@ TEXTS = {
         "cam_unavail": "📷 カメラが使えません",
         "selfie_toggle": "📸 セルフィー撮影",
         "effect_prompt": "✨ エフェクトを選んでね！",
+        "cat_labels": ["なし", "頭", "目", "顔", "動物", "パーティ"],
+        "pick_prompt": "👇 一つ選んでね！",
         "start_btn": "🚀 歯みがきスタート！",
         "time_opts": {"1分": 60, "1分30秒": 90, "2分": 120, "2分30秒": 150, "3分": 180},
         "default_time": "2分",
@@ -465,6 +475,8 @@ if start:
     guide_json = json.dumps(T["guide"], ensure_ascii=False)
     cheers_json = json.dumps(T["cheers"], ensure_ascii=False)
     celeb_msgs_json = json.dumps(T["celeb_msgs"], ensure_ascii=False)
+    cat_labels = T.get("cat_labels", ["None", "Head", "Eyes", "Face", "Animal", "Fun"])
+    pick_prompt = T.get("pick_prompt", "👇 Pick one!")
 
     import streamlit.components.v1 as components
 
@@ -658,25 +670,37 @@ body {{
   width:100%; height:100%; pointer-events:none;
 }}
 .effect-cats {{
-  display:flex; gap:3px; justify-content:center; flex-wrap:wrap;
-  padding:3px 5px; background:rgba(0,0,0,0.05); border-radius:10px;
-}}
-.effect-items {{
-  display:flex; gap:3px; justify-content:center; flex-wrap:wrap;
-  padding:2px 0; min-height:28px;
+  display:flex; gap:4px; justify-content:center; flex-wrap:wrap;
+  padding:4px 6px;
 }}
 .effect-cat-btn {{
-  font-size:17px; padding:3px 7px; border:2px solid rgba(0,0,0,0.06);
+  display:flex; flex-direction:column; align-items:center; gap:1px;
+  padding:4px 8px 3px; border:2px solid rgba(0,0,0,0.08);
   border-radius:10px; background:rgba(255,255,255,0.9);
   cursor:pointer; transition:transform .1s, background .15s;
 }}
+.cat-icon {{ font-size:18px; line-height:1.2; }}
+.cat-label {{ font-size:10px; color:#888; line-height:1; white-space:nowrap; }}
 .effect-cat-btn:active {{ transform:scale(.9); }}
 .effect-cat-btn.active {{ border-color:#42a5f5; background:#bbdefb; }}
+.effect-cat-btn.active .cat-label {{ color:#1565c0; font-weight:600; }}
+.effect-items-wrap {{
+  width:100%;
+}}
+.pick-prompt {{
+  font-size:11px; color:#888; text-align:center; margin-bottom:2px;
+}}
+.effect-items {{
+  display:flex; gap:4px; justify-content:center; flex-wrap:wrap;
+  padding:5px 8px;
+  background:rgba(255,243,224,0.5); border:1.5px dashed #ffcc80;
+  border-radius:10px;
+}}
 .effect-item-btn {{
-  font-size:16px; padding:2px; border:2px solid transparent;
-  border-radius:50%; background:rgba(255,255,255,0.7);
+  font-size:18px; padding:2px; border:2px solid transparent;
+  border-radius:50%; background:rgba(255,255,255,0.8);
   cursor:pointer; transition:transform .1s;
-  width:32px; height:32px; display:flex; align-items:center; justify-content:center;
+  width:36px; height:36px; display:flex; align-items:center; justify-content:center;
 }}
 .effect-item-btn:active {{ transform:scale(.9); }}
 .effect-item-btn.active {{ border-color:#ff9800; background:#fff3e0; }}
@@ -791,14 +815,17 @@ body {{
     <div class="pre-start" id="preStart">
       <div class="pre-start-prompt">{T['effect_prompt']}</div>
       <div class="effect-cats">
-        <button class="effect-cat-btn" onclick="selectCat(-1)">🔄</button>
-        <button class="effect-cat-btn" onclick="selectCat(0)">🎩</button>
-        <button class="effect-cat-btn" onclick="selectCat(1)">👓</button>
-        <button class="effect-cat-btn" onclick="selectCat(2)">😺</button>
-        <button class="effect-cat-btn" onclick="selectCat(3)">🐾</button>
-        <button class="effect-cat-btn" onclick="selectCat(4)">🎪</button>
+        <button class="effect-cat-btn" onclick="selectCat(-1)"><span class="cat-icon">🚫</span><span class="cat-label">{cat_labels[0]}</span></button>
+        <button class="effect-cat-btn" onclick="selectCat(0)"><span class="cat-icon">🎩</span><span class="cat-label">{cat_labels[1]}</span></button>
+        <button class="effect-cat-btn" onclick="selectCat(1)"><span class="cat-icon">👓</span><span class="cat-label">{cat_labels[2]}</span></button>
+        <button class="effect-cat-btn" onclick="selectCat(2)"><span class="cat-icon">😺</span><span class="cat-label">{cat_labels[3]}</span></button>
+        <button class="effect-cat-btn" onclick="selectCat(3)"><span class="cat-icon">🐾</span><span class="cat-label">{cat_labels[4]}</span></button>
+        <button class="effect-cat-btn" onclick="selectCat(4)"><span class="cat-icon">🎪</span><span class="cat-label">{cat_labels[5]}</span></button>
       </div>
-      <div class="effect-items" id="effectItems"></div>
+      <div class="effect-items-wrap" id="effectItemsWrap" style="display:none;">
+        <div class="pick-prompt">{pick_prompt}</div>
+        <div class="effect-items" id="effectItems"></div>
+      </div>
       <button class="btn-start" onclick="startBrushing()">{T['start_btn']}</button>
     </div>
 
@@ -1305,8 +1332,10 @@ function restart() {{ resetTimer(); }}
 function selectCat(idx) {{
   activeCat=idx; activeEffect=null;
   const items=document.getElementById('effectItems');
+  const wrap=document.getElementById('effectItemsWrap');
   document.querySelectorAll('.effect-cat-btn').forEach((b,i)=>b.classList.toggle('active',i===idx+1));
-  if(idx<0){{items.innerHTML='';return;}}
+  if(idx<0){{items.innerHTML='';wrap.style.display='none';return;}}
+  wrap.style.display='block';
   items.innerHTML=EFFECT_CATS[idx].items.map(e=>
     `<button class="effect-item-btn" onclick="selectEffect('${{e}}')">${{e}}</button>`
   ).join('');
