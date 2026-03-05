@@ -23,6 +23,10 @@ TEXTS = {
         "name_placeholder": "이름을 입력하세요",
         "time_label": "⏱️ 양치 시간 선택",
         "char_label": "🐾 캐릭터 선택",
+        "char_toggle": "🐾 캐릭터 사용",
+        "char_cat_label": "📂 캐릭터 종류",
+        "cancel": "❌ 취소",
+        "cancel_confirm": "정말 양치를 취소할까요?",
         "mode_label": "📱 모드",
         "mode_basic": "기본",
         "mode_mirror": "🪞 거울",
@@ -90,6 +94,10 @@ TEXTS = {
         "name_placeholder": "Enter your name",
         "time_label": "⏱️ Brushing time",
         "char_label": "🐾 Choose character",
+        "char_toggle": "🐾 Use character",
+        "char_cat_label": "📂 Character type",
+        "cancel": "❌ Cancel",
+        "cancel_confirm": "Really stop brushing?",
         "mode_label": "📱 Mode",
         "mode_basic": "Basic",
         "mode_mirror": "🪞 Mirror",
@@ -157,6 +165,10 @@ TEXTS = {
         "name_placeholder": "请输入名字",
         "time_label": "⏱️ 刷牙时间",
         "char_label": "🐾 选择角色",
+        "char_toggle": "🐾 使用角色",
+        "char_cat_label": "📂 角色种类",
+        "cancel": "❌ 取消",
+        "cancel_confirm": "真的要停止刷牙吗？",
         "mode_label": "📱 模式",
         "mode_basic": "基本",
         "mode_mirror": "🪞 镜子",
@@ -224,6 +236,10 @@ TEXTS = {
         "name_placeholder": "Escribe tu nombre",
         "time_label": "⏱️ Tiempo de cepillado",
         "char_label": "🐾 Elige personaje",
+        "char_toggle": "🐾 Usar personaje",
+        "char_cat_label": "📂 Tipo de personaje",
+        "cancel": "❌ Cancelar",
+        "cancel_confirm": "Realmente quieres dejar de cepillarte?",
         "mode_label": "📱 Modo",
         "mode_basic": "Básico",
         "mode_mirror": "🪞 Espejo",
@@ -291,6 +307,10 @@ TEXTS = {
         "name_placeholder": "名前を入れてね",
         "time_label": "⏱️ 歯みがき時間",
         "char_label": "🐾 キャラクターを選ぼう",
+        "char_toggle": "🐾 キャラクターを使う",
+        "char_cat_label": "📂 キャラクターの種類",
+        "cancel": "❌ キャンセル",
+        "cancel_confirm": "本当に歯みがきをやめますか？",
         "mode_label": "📱 モード",
         "mode_basic": "きほん",
         "mode_mirror": "🪞 ミラー",
@@ -353,14 +373,148 @@ TEXTS = {
     },
 }
 
-# --- Characters ---
-CHARACTERS = {
-    "🐰 토끼 (Bunny)": "🐰",
-    "🐻 곰 (Bear)": "🐻",
-    "🐱 고양이 (Cat)": "🐱",
-    "🐶 강아지 (Dog)": "🐶",
-    "🦊 여우 (Fox)": "🦊",
-    "🐸 개구리 (Frog)": "🐸",
+# --- Characters (categorized) ---
+CHAR_CATEGORIES = {
+    "ko": {
+        "기본": {
+            "🐰 토끼": "🐰", "🐻 곰": "🐻", "🐱 고양이": "🐱",
+            "🐶 강아지": "🐶", "🦊 여우": "🦊", "🐸 개구리": "🐸",
+            "🐼 판다": "🐼", "🦁 사자": "🦁", "🐯 호랑이": "🐯",
+        },
+        "공룡": {
+            "🦕 브라키오사우르스": "🦕", "🦖 티라노사우르스": "🦖",
+            "🔰 트리케라톱스": "🛡️", "🪨 안킬로사우르스": "🪨",
+            "🌿 스테고사우르스": "🌿", "🏃 오르니토미무스": "🏃",
+            "🪶 아르카이옵테릭스": "🪶", "🌋 스피노사우르스": "🌋",
+            "🥚 파라사우롤로푸스": "🥚", "🦴 벨로키랍토르": "🦴",
+        },
+        "새": {
+            "🦅 독수리": "🦅", "🦜 앵무새": "🦜", "🐧 펭귄": "🐧",
+            "🦉 올빼미": "🦉", "🦢 백조": "🦢", "🦩 플라밍고": "🦩",
+            "🐦 참새": "🐦", "🦚 공작": "🦚",
+        },
+        "바다": {
+            "🐬 돌고래": "🐬", "🐙 문어": "🐙", "🦈 상어": "🦈",
+            "🐢 거북이": "🐢", "🐠 열대어": "🐠", "🦑 오징어": "🦑",
+            "🐳 고래": "🐳", "🦀 게": "🦀",
+        },
+        "곤충": {
+            "🦋 나비": "🦋", "🐞 무당벌레": "🐞", "🐝 꿀벌": "🐝",
+            "🐛 애벌레": "🐛", "🦗 귀뚜라미": "🦗", "🐜 개미": "🐜",
+        },
+    },
+    "en": {
+        "Basic": {
+            "🐰 Bunny": "🐰", "🐻 Bear": "🐻", "🐱 Cat": "🐱",
+            "🐶 Dog": "🐶", "🦊 Fox": "🦊", "🐸 Frog": "🐸",
+            "🐼 Panda": "🐼", "🦁 Lion": "🦁", "🐯 Tiger": "🐯",
+        },
+        "Dinosaurs": {
+            "🦕 Brachiosaurus": "🦕", "🦖 T-Rex": "🦖",
+            "🛡️ Triceratops": "🛡️", "🪨 Ankylosaurus": "🪨",
+            "🌿 Stegosaurus": "🌿", "🏃 Ornithomimus": "🏃",
+            "🪶 Archaeopteryx": "🪶", "🌋 Spinosaurus": "🌋",
+            "🥚 Parasaurolophus": "🥚", "🦴 Velociraptor": "🦴",
+        },
+        "Birds": {
+            "🦅 Eagle": "🦅", "🦜 Parrot": "🦜", "🐧 Penguin": "🐧",
+            "🦉 Owl": "🦉", "🦢 Swan": "🦢", "🦩 Flamingo": "🦩",
+            "🐦 Sparrow": "🐦", "🦚 Peacock": "🦚",
+        },
+        "Sea": {
+            "🐬 Dolphin": "🐬", "🐙 Octopus": "🐙", "🦈 Shark": "🦈",
+            "🐢 Turtle": "🐢", "🐠 Tropical Fish": "🐠", "🦑 Squid": "🦑",
+            "🐳 Whale": "🐳", "🦀 Crab": "🦀",
+        },
+        "Insects": {
+            "🦋 Butterfly": "🦋", "🐞 Ladybug": "🐞", "🐝 Bee": "🐝",
+            "🐛 Caterpillar": "🐛", "🦗 Cricket": "🦗", "🐜 Ant": "🐜",
+        },
+    },
+    "zh": {
+        "基本": {
+            "🐰 兔子": "🐰", "🐻 熊": "🐻", "🐱 猫": "🐱",
+            "🐶 狗": "🐶", "🦊 狐狸": "🦊", "🐸 青蛙": "🐸",
+            "🐼 熊猫": "🐼", "🦁 狮子": "🦁", "🐯 老虎": "🐯",
+        },
+        "恐龙": {
+            "🦕 腕龙": "🦕", "🦖 霸王龙": "🦖",
+            "🛡️ 三角龙": "🛡️", "🪨 甲龙": "🪨",
+            "🌿 剑龙": "🌿", "🏃 似鸟龙": "🏃",
+            "🪶 始祖鸟": "🪶", "🌋 棘龙": "🌋",
+            "🥚 副栉龙": "🥚", "🦴 迅猛龙": "🦴",
+        },
+        "鸟类": {
+            "🦅 鹰": "🦅", "🦜 鹦鹉": "🦜", "🐧 企鹅": "🐧",
+            "🦉 猫头鹰": "🦉", "🦢 天鹅": "🦢", "🦩 火烈鸟": "🦩",
+            "🐦 麻雀": "🐦", "🦚 孔雀": "🦚",
+        },
+        "海洋": {
+            "🐬 海豚": "🐬", "🐙 章鱼": "🐙", "🦈 鲨鱼": "🦈",
+            "🐢 海龟": "🐢", "🐠 热带鱼": "🐠", "🦑 鱿鱼": "🦑",
+            "🐳 鲸鱼": "🐳", "🦀 螃蟹": "🦀",
+        },
+        "昆虫": {
+            "🦋 蝴蝶": "🦋", "🐞 瓢虫": "🐞", "🐝 蜜蜂": "🐝",
+            "🐛 毛毛虫": "🐛", "🦗 蟋蟀": "🦗", "🐜 蚂蚁": "🐜",
+        },
+    },
+    "es": {
+        "Basico": {
+            "🐰 Conejo": "🐰", "🐻 Oso": "🐻", "🐱 Gato": "🐱",
+            "🐶 Perro": "🐶", "🦊 Zorro": "🦊", "🐸 Rana": "🐸",
+            "🐼 Panda": "🐼", "🦁 Leon": "🦁", "🐯 Tigre": "🐯",
+        },
+        "Dinosaurios": {
+            "🦕 Braquiosaurio": "🦕", "🦖 T-Rex": "🦖",
+            "🛡️ Triceratops": "🛡️", "🪨 Anquilosaurio": "🪨",
+            "🌿 Estegosaurio": "🌿", "🏃 Ornitomimo": "🏃",
+            "🪶 Archaeopteryx": "🪶", "🌋 Espinosaurio": "🌋",
+            "🥚 Parasaurolophus": "🥚", "🦴 Velociraptor": "🦴",
+        },
+        "Aves": {
+            "🦅 Aguila": "🦅", "🦜 Loro": "🦜", "🐧 Pinguino": "🐧",
+            "🦉 Buho": "🦉", "🦢 Cisne": "🦢", "🦩 Flamenco": "🦩",
+            "🐦 Gorrion": "🐦", "🦚 Pavo Real": "🦚",
+        },
+        "Mar": {
+            "🐬 Delfin": "🐬", "🐙 Pulpo": "🐙", "🦈 Tiburon": "🦈",
+            "🐢 Tortuga": "🐢", "🐠 Pez Tropical": "🐠", "🦑 Calamar": "🦑",
+            "🐳 Ballena": "🐳", "🦀 Cangrejo": "🦀",
+        },
+        "Insectos": {
+            "🦋 Mariposa": "🦋", "🐞 Mariquita": "🐞", "🐝 Abeja": "🐝",
+            "🐛 Oruga": "🐛", "🦗 Grillo": "🦗", "🐜 Hormiga": "🐜",
+        },
+    },
+    "ja": {
+        "きほん": {
+            "🐰 うさぎ": "🐰", "🐻 くま": "🐻", "🐱 ねこ": "🐱",
+            "🐶 いぬ": "🐶", "🦊 きつね": "🦊", "🐸 かえる": "🐸",
+            "🐼 パンダ": "🐼", "🦁 ライオン": "🦁", "🐯 とら": "🐯",
+        },
+        "きょうりゅう": {
+            "🦕 ブラキオサウルス": "🦕", "🦖 ティラノサウルス": "🦖",
+            "🛡️ トリケラトプス": "🛡️", "🪨 アンキロサウルス": "🪨",
+            "🌿 ステゴサウルス": "🌿", "🏃 オルニトミムス": "🏃",
+            "🪶 アーケオプテリクス": "🪶", "🌋 スピノサウルス": "🌋",
+            "🥚 パラサウロロフス": "🥚", "🦴 ヴェロキラプトル": "🦴",
+        },
+        "とり": {
+            "🦅 わし": "🦅", "🦜 おうむ": "🦜", "🐧 ペンギン": "🐧",
+            "🦉 ふくろう": "🦉", "🦢 はくちょう": "🦢", "🦩 フラミンゴ": "🦩",
+            "🐦 すずめ": "🐦", "🦚 くじゃく": "🦚",
+        },
+        "うみ": {
+            "🐬 イルカ": "🐬", "🐙 たこ": "🐙", "🦈 サメ": "🦈",
+            "🐢 かめ": "🐢", "🐠 ねったいぎょ": "🐠", "🦑 いか": "🦑",
+            "🐳 くじら": "🐳", "🦀 かに": "🦀",
+        },
+        "むし": {
+            "🦋 ちょうちょ": "🦋", "🐞 てんとうむし": "🐞", "🐝 みつばち": "🐝",
+            "🐛 いもむし": "🐛", "🦗 こおろぎ": "🦗", "🐜 あり": "🐜",
+        },
+    },
 }
 
 # --- CSS ---
@@ -459,8 +613,16 @@ time_opts = T["time_opts"]
 selected_label = st.select_slider(T["time_label"], options=list(time_opts.keys()), value=T["default_time"])
 selected_seconds = time_opts[selected_label]
 
-char_choice = st.selectbox(T["char_label"], list(CHARACTERS.keys()), index=0)
-char_emoji = CHARACTERS[char_choice]
+char_enabled = st.checkbox(T["char_toggle"], value=True)
+if char_enabled:
+    char_cats = CHAR_CATEGORIES[lang]
+    cat_names = list(char_cats.keys())
+    selected_cat = st.selectbox(T["char_cat_label"], cat_names, index=0)
+    chars_in_cat = char_cats[selected_cat]
+    char_choice = st.selectbox(T["char_label"], list(chars_in_cat.keys()), index=0)
+    char_emoji = chars_in_cat[char_choice]
+else:
+    char_emoji = "🦷"
 
 mode = st.radio(T["mode_label"], [T["mode_basic"], T["mode_mirror"]], horizontal=True, index=1)
 mirror_mode = mode == T["mode_mirror"]
@@ -738,6 +900,7 @@ body {{
 .btn-add {{ background:#e3f2fd; color:#1565c0; }}
 .btn-pause {{ background:#fff3e0; color:#ef6c00; }}
 .btn-reset {{ background:#fce4ec; color:#c62828; }}
+.btn-cancel {{ background:#f5f5f5; color:#616161; border:1.5px solid #bbb; }}
 
 /* ---------- celebration ---------- */
 .celebration {{
@@ -834,6 +997,7 @@ body {{
       <button class="btn btn-add" onclick="addTime(30)">{T['add30']}</button>
       <button class="btn btn-pause" id="pauseBtn" onclick="togglePause()">{T['pause']}</button>
       <button class="btn btn-reset" onclick="resetTimer()">{T['reset']}</button>
+      <button class="btn btn-cancel" onclick="cancelTimer()">{T['cancel']}</button>
     </div>
   </div>
 
@@ -863,6 +1027,7 @@ const CHAR_EMOJI = "{char_emoji}";
 const PAUSE_LABEL = `{T['pause']}`;
 const RESUME_LABEL = `{T['resume']}`;
 const CELEB_SUB = `{T['celeb_sub']}`;
+const CANCEL_CONFIRM = `{T['cancel_confirm']}`;
 const PHOTO_MSG = `{T['photo_msg']}`;
 const APP_TITLE = `{T['title']}`;
 let celebMsgText = '';
@@ -1285,6 +1450,19 @@ function togglePause() {{
   paused = !paused;
   document.getElementById('pauseBtn').innerHTML = paused ? RESUME_LABEL : PAUSE_LABEL;
   if (paused) stopBgm(); else startBgm();
+}}
+
+function cancelTimer() {{
+  if (!confirm(CANCEL_CONFIRM)) return;
+  clearInterval(interval); stopBgm();
+  finished = false; paused = false;
+  remaining = TOTAL; lastStageIdx = -1;
+  lastCheerTime = 0; cheerIdx = 0;
+  // Send message to Streamlit to reload
+  try {{ window.parent.location.reload(); }} catch(e) {{
+    // fallback: hide timer, show nothing
+    document.getElementById('timerScreen').style.display = 'none';
+  }}
 }}
 
 function addTime(sec) {{
